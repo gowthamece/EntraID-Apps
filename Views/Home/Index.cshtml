@@ -1,0 +1,42 @@
+﻿ ﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Add authorization using app roles & roles claims";
+}
+
+
+<h3 style="color:blue">Claims from the signed-in user's token</h3>
+
+
+@{
+    var user = ViewData["User"] as ClaimsPrincipal;
+}
+<div class="card">
+    <h5 class="card-header">Table Basic</h5>
+    <div class="table-responsive text-nowrap">
+        <table class="table table-striped table-bordered table-condensed table-hover">
+            <tr>
+                <th>ClaimType</th>
+                <th>Value</th>
+            </tr>
+
+            @foreach (var claim in user.Claims)
+            {
+                <tr>
+                    @{
+                        if (claim.Type == "roles" || claim.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
+                        {
+                            <td><b>@claim.Type</b></td>
+                        }
+                        else
+                        {
+                            <td>@claim.Type</td>
+                        }
+                    }
+
+                    <td>@claim.Value</td>
+                </tr>
+            }
+
+        </table>
+    </div>
+</div>
