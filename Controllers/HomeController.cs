@@ -4,6 +4,7 @@ using System.Diagnostics;
 using TechnoNimbus_Entra.Models;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
+using System.Security.Claims;
 
 namespace TechnoNimbus_Entra.Controllers
 {
@@ -12,10 +13,11 @@ namespace TechnoNimbus_Entra.Controllers
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly GraphHelper _graphHelper;
-
+        private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
 
         public HomeController(IHttpContextAccessor httpContextAccessor,
-      IConfiguration configuration)
+      IConfiguration configuration ,
+      MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
         {
             string[] graphScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             _httpContextAccessor = httpContextAccessor;
@@ -24,6 +26,8 @@ namespace TechnoNimbus_Entra.Controllers
             {
                 this._graphHelper = new GraphHelper(this._httpContextAccessor.HttpContext, graphScopes);
             }
+
+            _consentHandler = consentHandler;
         }
 
         [AuthorizeForScopes(ScopeKeySection = "MicrosoftGraph:Scopes")]
@@ -36,6 +40,12 @@ namespace TechnoNimbus_Entra.Controllers
 
         public IActionResult Privacy()
         {
+            string claimsChallange=CheckForRequiredAuthContext("C1");
+            if(!string.IsNullOrEmpty(claimsChallange))
+            {
+                _consentHandler.ChallengeUser(new string[] { "user.read" }, claimsChallange);
+                return new EmptyResult();
+            }
             return View();
         }
 
@@ -44,6 +54,25 @@ namespace TechnoNimbus_Entra.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public string CheckForRequiredAuthContext(string authContextId)
+        {
+            string claimChallange = string.Empty;
+            string saveAutheContextId = "C1";
+            HttpContext context = this.HttpContext;
+            string authContextClassReferenceClaim = "acrs";
+            if(context ==null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+            Claim acrsClaim = context.User.FindAll(authContextClassReferenceClaim).FirstOrDefault(x=>x.Value==saveAutheContextId);
+           if(acrsClaim?.Value == saveAutheContextId)
+            {
+                claimChallange = "{\"id_token\":{\"acrs\":{\"essential\":true;\"value\"\"" + saveAutheContextId + "\"}}}";
+            }
+            return claimChallange;
+
         }
     }
 }
