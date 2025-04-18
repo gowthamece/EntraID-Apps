@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35017.193
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntraID-WebApp", "EntraID-WebApp.csproj", "{CD5D56C3-2A2C-4419-99BB-0836B826B2BB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSEntraID-App", "..\MSEntraID-App\MSEntraID-App.csproj", "{6865976A-2B82-4490-9C80-CDE949BB7A86}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntraID-App", "..\EntraID-App\EntraID-App.csproj", "{4B506928-1A1D-4311-960B-41EF28A7382E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MS-Entra-ID-Blazor-Client", "MS-Entra-ID-Blazor-Client\MS-Entra-ID-Blazor-Client.csproj", "{4C15C2EA-3AE5-4AE0-8F7C-E403418657A9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entra-ID-App-WebAPI", "Entra-ID-App-WebAPI\Entra-ID-App-WebAPI.csproj", "{D13A0D90-0A23-4CD8-BFE9-B4C83816E5FB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntraID-WebApp", "MS Entra .NET 8 MVC Web App\EntraID-WebApp.csproj", "{514DEA1E-FAE8-46B3-BD0C-6B94ED482099}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +19,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CD5D56C3-2A2C-4419-99BB-0836B826B2BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD5D56C3-2A2C-4419-99BB-0836B826B2BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD5D56C3-2A2C-4419-99BB-0836B826B2BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD5D56C3-2A2C-4419-99BB-0836B826B2BB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6865976A-2B82-4490-9C80-CDE949BB7A86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6865976A-2B82-4490-9C80-CDE949BB7A86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6865976A-2B82-4490-9C80-CDE949BB7A86}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -27,6 +27,18 @@ Global
 		{4B506928-1A1D-4311-960B-41EF28A7382E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B506928-1A1D-4311-960B-41EF28A7382E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B506928-1A1D-4311-960B-41EF28A7382E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C15C2EA-3AE5-4AE0-8F7C-E403418657A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C15C2EA-3AE5-4AE0-8F7C-E403418657A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C15C2EA-3AE5-4AE0-8F7C-E403418657A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C15C2EA-3AE5-4AE0-8F7C-E403418657A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D13A0D90-0A23-4CD8-BFE9-B4C83816E5FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D13A0D90-0A23-4CD8-BFE9-B4C83816E5FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D13A0D90-0A23-4CD8-BFE9-B4C83816E5FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D13A0D90-0A23-4CD8-BFE9-B4C83816E5FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{514DEA1E-FAE8-46B3-BD0C-6B94ED482099}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{514DEA1E-FAE8-46B3-BD0C-6B94ED482099}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{514DEA1E-FAE8-46B3-BD0C-6B94ED482099}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{514DEA1E-FAE8-46B3-BD0C-6B94ED482099}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
