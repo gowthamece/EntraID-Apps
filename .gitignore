@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /External-EntraID-WebApp/Properties
+/MS_Entra_ID_Blazor_Server/Properties/ServiceDependencies/blazorapp-dev01 - Web Deploy1

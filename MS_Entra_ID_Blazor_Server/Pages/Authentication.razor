@@ -1,0 +1,15 @@
+@page "/authentication/{action}"
+
+<h3>Authentication</h3>
+
+<p>This page is not required for Blazor Server with Microsoft Identity Web.</p>
+<p>Authentication is handled by Microsoft Identity Web controllers.</p>
+
+<ul>
+    <li>To sign in: <a href="/MicrosoftIdentity/Account/SignIn">Sign In</a></li>
+    <li>To sign out: <a href="/MicrosoftIdentity/Account/SignOut">Sign Out</a></li>
+</ul>
+
+@code{
+    [Parameter] public string? Action { get; set; }
+}

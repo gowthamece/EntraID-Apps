@@ -1,0 +1,13 @@
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <span class="text-white me-3">Hello, @context.User.Identity?.Name!</span>
+        <form action="MicrosoftIdentity/Account/SignOut" method="post">
+            <button type="submit" class="btn btn-link nav-link">Log out</button>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <a href="MicrosoftIdentity/Account/SignIn" class="btn btn-link nav-link">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>

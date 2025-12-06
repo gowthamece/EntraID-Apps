@@ -1,0 +1,118 @@
+@page "/groups"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Graph
+@inject Microsoft.Graph.GraphServiceClient GraphServiceClient
+@attribute [Authorize]
+
+<h3>Microsoft Entra ID Groups</h3>
+
+@if (isLoading)
+{
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p><em>Loading groups...</em></p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Error:</strong> @errorMessage
+    </div>
+}
+else if (groups == null || !groups.Any())
+{
+    <div class="alert alert-info" role="alert">
+        No groups found.
+    </div>
+}
+else
+{
+    <div class="mb-3">
+        <strong>Total Groups:</strong> @groups.Count
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Display Name</th>
+                    <th>Description</th>
+                    <th>Mail</th>
+                    <th>Mail Enabled</th>
+                    <th>Security Enabled</th>
+                    <th>Group ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var group in groups)
+                {
+                    <tr>
+                        <td>@group.DisplayName</td>
+                        <td>@(string.IsNullOrEmpty(group.Description) ? "N/A" : group.Description)</td>
+                        <td>@(string.IsNullOrEmpty(group.Mail) ? "N/A" : group.Mail)</td>
+                        <td>
+                            @if (group.MailEnabled == true)
+                            {
+                                <span class="badge bg-success">Yes</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">No</span>
+                            }
+                        </td>
+                        <td>
+                            @if (group.SecurityEnabled == true)
+                            {
+                                <span class="badge bg-primary">Yes</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">No</span>
+                            }
+                        </td>
+                        <td><small class="text-muted">@group.Id</small></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<Group> groups = new();
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+
+            // Get all groups from Microsoft Graph
+            var result = await GraphServiceClient.Groups
+                .Request()
+                .Select("id,displayName,description,mail,mailEnabled,securityEnabled")
+                .Top(999)
+                .GetAsync();
+
+            if (result?.CurrentPage != null)
+            {
+                // Sort groups by display name in memory
+                groups = result.CurrentPage
+                    .OrderBy(g => g.DisplayName)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to retrieve groups: {ex.Message}";
+            Console.WriteLine($"Error retrieving groups: {ex}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

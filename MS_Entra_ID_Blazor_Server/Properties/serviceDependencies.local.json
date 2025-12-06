@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "identityapp1": {
+      "connectionInfo": "App registration: MS_Entra_ID_Blazor_Server, Tenant: Default Directory (ootysip.com - Microsoft Entra ID)",
+      "secretStore": "LocalSecretsFile",
+      "type": "identityapp.secretStore",
+      "connectionId": "AzureAD:ClientSecret"
+    },
+    "secrets1": {
+      "type": "secrets.user"
+    }
+  }
+}
