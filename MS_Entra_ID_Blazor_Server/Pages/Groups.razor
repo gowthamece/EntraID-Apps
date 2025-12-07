@@ -1,10 +1,24 @@
 @page "/groups"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Graph
-@inject Microsoft.Graph.GraphServiceClient GraphServiceClient
+@using MS_Entra_ID_Blazor_Server.Services
+@inject ManagedIdentityGraphService GraphService
+@inject IWebHostEnvironment Environment
 @attribute [Authorize]
 
 <h3>Microsoft Entra ID Groups</h3>
+
+@{
+    var isAzure = !string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
+    var authMethod = isAzure ? "Managed Identity (Application Permissions)" : "User Sign-In (Delegated Permissions)";
+    var badgeClass = isAzure ? "bg-success" : "bg-primary";
+}
+
+<div class="mb-3">
+    <span class="badge @badgeClass">
+        <i class="bi bi-shield-check"></i> @authMethod
+    </span>
+</div>
 
 @if (isLoading)
 {
@@ -90,20 +104,8 @@ else
             isLoading = true;
             errorMessage = string.Empty;
 
-            // Get all groups from Microsoft Graph
-            var result = await GraphServiceClient.Groups
-                .Request()
-                .Select("id,displayName,description,mail,mailEnabled,securityEnabled")
-                .Top(999)
-                .GetAsync();
-
-            if (result?.CurrentPage != null)
-            {
-                // Sort groups by display name in memory
-                groups = result.CurrentPage
-                    .OrderBy(g => g.DisplayName)
-                    .ToList();
-            }
+            // Get all groups using Managed Identity
+            groups = await GraphService.GetAllGroupsAsync();
         }
         catch (Exception ex)
         {

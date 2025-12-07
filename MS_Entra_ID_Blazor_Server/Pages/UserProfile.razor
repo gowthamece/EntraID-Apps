@@ -1,13 +1,23 @@
 @page "/profile"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.Graph
-@inject Microsoft.Graph.GraphServiceClient GraphServiceClient
+@using MS_Entra_ID_Blazor_Server.Services
+@using System.Security.Claims
+@inject ManagedIdentityGraphService GraphService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize]
 
 <h3>User Profile</h3>
 @if (user == null)
 {
     <p><em>Loading...</em></p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Error:</strong> @errorMessage
+    </div>
 }
 else
 {
@@ -45,16 +55,30 @@ else
 
 @code {
     User? user;
+    string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            user = await GraphServiceClient.Me.Request().GetAsync();
+            // Get the authenticated user's UPN from claims
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userPrincipalName = authState.User.FindFirst(ClaimTypes.Name)?.Value 
+                ?? authState.User.FindFirst("preferred_username")?.Value;
+
+            if (!string.IsNullOrEmpty(userPrincipalName))
+            {
+                user = await GraphService.GetUserAsync(userPrincipalName);
+            }
+            else
+            {
+                errorMessage = "Unable to determine user identity.";
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            errorMessage = $"Failed to load user profile: {ex.Message}";
+            Console.WriteLine($"Error: {ex}");
         }
     }
 }
