@@ -1,0 +1,87 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<FluentDesignSystemProvider>
+    <FluentLayout>
+        <FluentHeader>
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                <FluentStack Orientation="Orientation.Horizontal">
+                    <FluentLabel Typo="Typography.H4">🔑 FIDO2 User Provisioning</FluentLabel>
+                </FluentStack>
+                
+                <FluentStack Orientation="Orientation.Horizontal">
+                    <AuthorizeView>
+                        <Authorized>
+                            <FluentLabel>Welcome, @context.User.Identity?.Name</FluentLabel>
+                            <FluentButton Appearance="Appearance.Stealth" @onclick="SignOut">
+                                Sign Out
+                            </FluentButton>
+                        </Authorized>
+                        <NotAuthorized>
+                            <FluentButton Appearance="Appearance.Accent" @onclick="SignIn">
+                                Sign In
+                            </FluentButton>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </FluentStack>
+            </FluentStack>
+        </FluentHeader>
+
+        <FluentBodyContent>
+            <FluentStack Orientation="Orientation.Horizontal" Width="100%">
+                <nav style="width: 250px; padding: 10px; background-color: #f5f5f5;">
+                    <FluentNavLink Href="/" Match="NavLinkMatch.All" style="display: block; padding: 10px;">
+                        🏠 Home
+                    </FluentNavLink>
+                    <AuthorizeView>
+                        <Authorized>
+                            <FluentNavLink Href="/my-fido2-keys" style="display: block; padding: 10px;">
+                                🔑 My Security Keys
+                            </FluentNavLink>
+                            <FluentNavLink Href="/fido-provisioning" style="display: block; padding: 10px;">
+                                � User Management
+                            </FluentNavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                </nav>
+
+                <div style="padding: 20px; width: 100%; flex: 1;">
+                    <AuthorizeView>
+                        <Authorized>
+                            @Body
+                        </Authorized>
+                        <NotAuthorized>
+                            <FluentCard>
+                                <h2>Authentication Required</h2>
+                                <p>Please sign in to access the FIDO2 provisioning interface.</p>
+                                <FluentButton Appearance="Appearance.Accent" @onclick="SignIn">
+                                    Sign In with Microsoft
+                                </FluentButton>
+                            </FluentCard>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </FluentStack>
+        </FluentBodyContent>
+    </FluentLayout>
+</FluentDesignSystemProvider>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    [Inject] public NavigationManager Navigation { get; set; } = default!;
+
+    private void SignIn()
+    {
+        Navigation.NavigateTo("/MicrosoftIdentity/Account/SignIn", forceLoad: true);
+    }
+
+    private void SignOut()
+    {
+        Navigation.NavigateTo("/MicrosoftIdentity/Account/SignOut", forceLoad: true);
+    }
+}

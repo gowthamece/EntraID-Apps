@@ -1,0 +1,166 @@
+@model Entra_ID_MVC_App.Models.GroupsViewModel
+@{
+    ViewData["Title"] = "Groups";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-users me-2"></i>Organization Groups
+            </h1>
+            
+            @if (!Model.IsSuccess)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Error
+                    </h4>
+                    <p>@Model.ErrorMessage</p>
+                    <hr>
+                    <p class="mb-0">
+                        Please ensure you have the required permissions or contact your administrator.
+                    </p>
+                </div>
+            }
+            else if (Model.TotalGroups == 0)
+            {
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="fas fa-info-circle me-2"></i>No Groups Found
+                    </h4>
+                    <p class="mb-0">No groups were found in your organization.</p>
+                </div>
+            }
+            else
+            {
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-chart-bar me-2"></i>Total Groups
+                                </h5>
+                                <h2 class="mb-0">@Model.TotalGroups</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-shield-alt me-2"></i>Security Groups
+                                </h5>
+                                <h2 class="mb-0">@Model.Groups.Count(g => g.GroupTypes == null || !g.GroupTypes.Contains("Unified"))</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Groups List
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col">Display Name</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Visibility</th>
+                                        <th scope="col">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var group in Model.Groups.OrderBy(g => g.DisplayName))
+                                    {
+                                        var groupType = "Security";
+                                        var badgeClass = "badge bg-secondary";
+                                        
+                                        if (group.GroupTypes != null && group.GroupTypes.Contains("Unified"))
+                                        {
+                                            groupType = "Microsoft 365";
+                                            badgeClass = "badge bg-info";
+                                        }
+
+                                        <tr>
+                                            <td>
+                                                <strong>@group.DisplayName</strong>
+                                                <br>
+                                                <small class="text-muted">@group.Id</small>
+                                            </td>
+                                            <td>
+                                                <span class="@badgeClass">@groupType</span>
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(group.Mail))
+                                                {
+                                                    <a href="mailto:@group.Mail">@group.Mail</a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">No email</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(group.Visibility))
+                                                {
+                                                    <span class="badge @(group.Visibility == "Public" ? "bg-success" : "bg-warning")">
+                                                        @group.Visibility
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(group.Description))
+                                                {
+                                                    if (group.Description.Length > 100)
+                                                    {
+                                                        <span title="@group.Description">
+                                                            @group.Description.Substring(0, 100)...
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @group.Description
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">No description</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            <div class="mt-4">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add tooltip support for truncated descriptions
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    </script>
+}

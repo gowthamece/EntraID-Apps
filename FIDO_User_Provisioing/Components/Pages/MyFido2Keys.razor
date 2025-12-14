@@ -1,0 +1,355 @@
+@page "/my-fido2-keys"
+@using FIDO_User_Provisioing.Models
+@using FIDO_User_Provisioing.Services
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject IFido2ProvisioningService Fido2Service
+@inject IJSRuntime JSRuntime
+@inject ILogger<MyFido2Keys> Logger
+@rendermode InteractiveServer
+
+<PageTitle>My FIDO2 Security Keys</PageTitle>
+
+<FluentCard>
+    <h1>My FIDO2 Security Keys</h1>
+    <p>Manage your own FIDO2 security keys for passwordless authentication.</p>
+</FluentCard>
+
+@if (currentUser != null)
+{
+    <FluentCard class="mt-4">
+        <h3>Your Profile</h3>
+        <p><strong>Name:</strong> @currentUser.DisplayName</p>
+        <p><strong>Email:</strong> @currentUser.UserPrincipalName</p>
+    </FluentCard>
+
+    <FluentCard class="mt-4">
+        <h3>Your FIDO2 Security Keys</h3>
+        
+        @if (isLoadingMethods)
+        {
+            <div class="d-flex align-items-center">
+                <FluentProgressRing style="width: 24px; height: 24px; margin-right: 10px;" />
+                <span>Loading your FIDO2 security keys...</span>
+            </div>
+        }
+        else if (userFido2Methods.Any())
+        {
+            <FluentDataGrid Items="@userFido2Methods.AsQueryable()" class="mt-3">
+                <PropertyColumn Property="@(m => m.DisplayName)" Title="Display Name" />
+                <PropertyColumn Property="@(m => m.Model)" Title="Model" />
+                <PropertyColumn Property="@(m => m.CreatedDateTime)" Title="Created" Format="yyyy-MM-dd HH:mm" />
+                <PropertyColumn Property="@(m => m.AttestationLevel)" Title="Attestation Level" />
+                <TemplateColumn Title="Actions">
+                    <FluentButton @onclick="@(() => DeleteMyFido2Key(context.Id!))"
+                                Appearance="Appearance.Stealth"
+                                style="color: red;">
+                        🗑️ Remove
+                    </FluentButton>
+                </TemplateColumn>
+            </FluentDataGrid>
+        }
+        else
+        {
+            <FluentMessageBar Intent="@MessageIntent.Info">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>No FIDO2 security keys found.</strong>
+                        <p class="mb-0">You don't have any FIDO2 security keys configured yet. Add one to enable passwordless authentication.</p>
+                    </div>
+                    <FluentButton @onclick="@(() => showProvisioningForm = true)" 
+                                Appearance="Appearance.Accent"
+                                style="margin-left: 20px;">
+                        🔑 Add Security Key
+                    </FluentButton>
+                </div>
+            </FluentMessageBar>
+        }
+
+        @if (userFido2Methods.Any())
+        {
+            <div class="mt-3">
+                <FluentButton @onclick="@(() => showProvisioningForm = !showProvisioningForm)" 
+                            Appearance="Appearance.Accent">
+                    @if (showProvisioningForm)
+                    {
+                        <span>❌ Cancel</span>
+                    }
+                    else
+                    {
+                        <span>➕ Add Another Security Key</span>
+                    }
+                </FluentButton>
+            </div>
+        }
+    </FluentCard>
+
+    @if (showProvisioningForm)
+    {
+        <FluentCard class="mt-4">
+            <h3>Add New FIDO2 Security Key</h3>
+            <FluentMessageBar Intent="@MessageIntent.Warning" class="mb-3">
+                <strong>Before you start:</strong>
+                <ul class="mb-0">
+                    <li>Have your FIDO2 security key ready (YubiKey, Windows Hello, etc.)</li>
+                    <li>Make sure it's connected or available on your device</li>
+                    <li>You'll need to interact with your security key during registration</li>
+                </ul>
+            </FluentMessageBar>
+
+            <EditForm Model="@provisioningRequest" OnValidSubmit="@ProvisionMyNewKey">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <FluentGrid>
+                    <FluentGridItem xs="12" md="6">
+                        <FluentTextField @bind-Value="provisioningRequest.DisplayName" 
+                                       Label="Display Name" 
+                                       Required="true"
+                                       Placeholder="e.g., My YubiKey, Work Security Key"
+                                       style="width: 100%;" />
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="6">
+                        <FluentTextField @bind-Value="provisioningRequest.Model" 
+                                       Label="Security Key Model (Optional)"
+                                       Placeholder="e.g., YubiKey 5 NFC, Windows Hello"
+                                       style="width: 100%;" />
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="6">
+                        <FluentNumberField @bind-Value="provisioningRequest.AttestationLevel" 
+                                         Label="Attestation Level"
+                                         Min="1" Max="3"
+                                         style="width: 100%;" />
+                        <small class="text-muted">1 = Basic, 2 = Self, 3 = Attested CA</small>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="6">
+                        <FluentCheckbox @bind-Value="provisioningRequest.IsBackupEligible" 
+                                      Label="Allow backup and sync" />
+                        <small class="text-muted">Recommended for platform authenticators</small>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12">
+                        <FluentButton Type="ButtonType.Submit" 
+                                    Appearance="Appearance.Accent"
+                                    Disabled="@isProvisioning">
+                            @if (isProvisioning)
+                            {
+                                <FluentProgressRing style="width: 16px; height: 16px;" />
+                                <span>Setting up...</span>
+                            }
+                            else
+                            {
+                                <span>🔑 Set Up Security Key</span>
+                            }
+                        </FluentButton>
+                        <FluentButton @onclick="@(() => showProvisioningForm = false)" 
+                                    Appearance="Appearance.Neutral"
+                                    style="margin-left: 10px;">
+                            Cancel
+                        </FluentButton>
+                    </FluentGridItem>
+                </FluentGrid>
+            </EditForm>
+        </FluentCard>
+    }
+}
+else
+{
+    <FluentCard class="mt-4">
+        <FluentMessageBar Intent="@MessageIntent.Error">
+            Unable to load your profile information. Please try refreshing the page or contact your administrator.
+        </FluentMessageBar>
+    </FluentCard>
+}
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <FluentCard class="mt-4">
+        <FluentMessageBar Intent="@(isError ? MessageIntent.Error : MessageIntent.Success)">
+            @message
+        </FluentMessageBar>
+    </FluentCard>
+}
+
+@code {
+    private UserSearchResult? currentUser;
+    private List<Fido2AuthenticationMethod> userFido2Methods = new();
+    private Fido2ProvisioningRequest provisioningRequest = new();
+    private bool isLoadingMethods = false;
+    private bool isProvisioning = false;
+    private bool showProvisioningForm = false;
+    private string message = string.Empty;
+    private bool isError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUser();
+        if (currentUser != null)
+        {
+            await LoadMyFido2Methods();
+            SetupDefaultProvisioningRequest();
+        }
+    }
+
+    private async Task LoadCurrentUser()
+    {
+        try
+        {
+            currentUser = await Fido2Service.GetCurrentUserAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading current user information");
+            ShowMessage("Error loading your profile information.", true);
+        }
+    }
+
+    private async Task LoadMyFido2Methods()
+    {
+        if (currentUser == null) return;
+
+        isLoadingMethods = true;
+        try
+        {
+            userFido2Methods.Clear();
+            var methods = await Fido2Service.GetCurrentUserFido2MethodsAsync();
+            userFido2Methods.AddRange(methods);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading current user's FIDO2 methods");
+            ShowMessage("Error loading your FIDO2 security keys.", true);
+        }
+        finally
+        {
+            isLoadingMethods = false;
+        }
+    }
+
+    private void SetupDefaultProvisioningRequest()
+    {
+        if (currentUser == null) return;
+
+        provisioningRequest = new Fido2ProvisioningRequest
+        {
+            UserPrincipalName = currentUser.UserPrincipalName,
+            DisplayName = $"Security Key {DateTime.Now:MMM dd, yyyy}",
+            AttestationLevel = 1,
+            IsBackupEligible = true
+        };
+    }
+
+    private async Task ProvisionMyNewKey()
+    {
+        if (currentUser == null) return;
+
+        isProvisioning = true;
+        try
+        {
+            var response = await Fido2Service.ProvisionFido2KeyAsync(currentUser.Id, provisioningRequest);
+            
+            if (response.Success)
+            {
+                ShowMessage($"✅ {response.Message}", false);
+                showProvisioningForm = false;
+                SetupDefaultProvisioningRequest(); // Reset form
+                await LoadMyFido2Methods(); // Refresh list
+                await ShowSetupInstructions();
+            }
+            else
+            {
+                ShowMessage($"❌ {response.Error ?? "Error setting up FIDO2 security key."}", true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error provisioning FIDO2 key for current user");
+            ShowMessage($"❌ Error setting up FIDO2 security key: {ex.Message}", true);
+        }
+        finally
+        {
+            isProvisioning = false;
+        }
+    }
+
+    private async Task DeleteMyFido2Key(string methodId)
+    {
+        if (currentUser == null) return;
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", 
+            "Are you sure you want to remove this FIDO2 security key? This cannot be undone.");
+        if (!confirmed) return;
+
+        try
+        {
+            var response = await Fido2Service.DeleteFido2KeyAsync(currentUser.Id, methodId);
+            
+            if (response.Success)
+            {
+                ShowMessage("✅ Security key removed successfully.", false);
+                await LoadMyFido2Methods();
+            }
+            else
+            {
+                ShowMessage($"❌ {response.Error ?? "Error removing FIDO2 security key."}", true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting FIDO2 key {MethodId}", methodId);
+            ShowMessage($"❌ Error removing FIDO2 security key: {ex.Message}", true);
+        }
+    }
+
+    private async Task ShowSetupInstructions()
+    {
+        var instructions = @"
+🔑 Complete Your FIDO2 Security Key Setup:
+
+To finish setting up your security key:
+
+1. Visit Microsoft MyAccount: https://account.microsoft.com
+2. Go to Security → Sign-in options → Security key
+3. Follow the prompts to complete registration
+4. You may need to:
+   • Insert your security key (USB/NFC)
+   • Touch the key when prompted
+   • Enter your security key PIN
+   • Verify with biometrics (if supported)
+
+Your security key will be active after completing these steps!
+        ";
+
+        await JSRuntime.InvokeVoidAsync("alert", instructions);
+    }
+
+    private void ShowMessage(string msg, bool error)
+    {
+        message = msg;
+        isError = error;
+        StateHasChanged();
+    }
+
+    private void ClearMessage()
+    {
+        message = string.Empty;
+        isError = false;
+    }
+}
+
+<style>
+    .d-flex {
+        display: flex;
+    }
+    
+    .align-items-center {
+        align-items: center;
+    }
+    
+    .justify-content-between {
+        justify-content: space-between;
+    }
+    
+    .text-muted {
+        color: #6c757d;
+        font-size: 0.875em;
+    }
+</style>
