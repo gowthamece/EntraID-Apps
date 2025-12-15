@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-FIDO_User_Provisioing-12345678-1234-1234-1234-123456789012</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.12.1" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.12.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.6" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="3.8.1" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.8.1" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="3.8.1" />
+    <!-- Remove the explicit Microsoft.Graph reference to let Microsoft.Identity.Web.MicrosoftGraph bring in the compatible version -->
+  </ItemGroup>
+
+</Project>

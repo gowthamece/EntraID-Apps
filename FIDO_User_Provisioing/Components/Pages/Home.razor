@@ -1,0 +1,75 @@
+﻿@page "/"
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<PageTitle>FIDO User Provisioning</PageTitle>
+
+<FluentCard>
+    <h1>FIDO2 Security Key Management</h1>
+    <p>Welcome to the FIDO2 Security Key User Provisioning application.</p>
+    
+    <div class="mt-4">
+        <FluentGrid>
+            <FluentGridItem xs="12" md="6">
+                <FluentCard style="height: 300px;">
+                    <h3>👤 Self-Service</h3>
+                    <p>Manage your own FIDO2 security keys:</p>
+                    <ul>
+                        <li>View your current security keys</li>
+                        <li>Add new FIDO2 security keys</li>
+                        <li>Remove existing security keys</li>
+                        <li>Get setup instructions</li>
+                    </ul>
+                    <div class="mt-3">
+                        <FluentButton Appearance="Appearance.Accent" @onclick="@(() => NavigateToMyKeys())">
+                            🔑 My Security Keys
+                        </FluentButton>
+                    </div>
+                </FluentCard>
+            </FluentGridItem>
+            <FluentGridItem xs="12" md="6">
+                <FluentCard style="height: 300px;">
+                    <h3>👥 Administration</h3>
+                    <p>Manage FIDO2 keys for other users:</p>
+                    <ul>
+                        <li>Search for users in Azure AD</li>
+                        <li>View existing FIDO2 security keys</li>
+                        <li>Provision new keys for users</li>
+                        <li>Delete existing security keys</li>
+                    </ul>
+                    <div class="mt-3">
+                        <FluentButton Appearance="Appearance.Accent" @onclick="@(() => NavigateToFidoProvisioning())">
+                            � User Management
+                        </FluentButton>
+                    </div>
+                </FluentCard>
+            </FluentGridItem>
+        </FluentGrid>
+    </div>
+</FluentCard>
+
+<FluentCard class="mt-4">
+    <h3>Prerequisites</h3>
+    <FluentMessageBar Intent="@MessageIntent.Info">
+        <p><strong>Note:</strong> Before using this application, ensure that:</p>
+        <ul>
+            <li>Azure AD application is configured with appropriate Graph API permissions</li>
+            <li>UserAuthenticationMethod.ReadWrite.All permission is granted</li>
+            <li>Admin consent has been provided for the required permissions</li>
+            <li>The application configuration in appsettings.json is properly set up</li>
+        </ul>
+    </FluentMessageBar>
+</FluentCard>
+
+@code {
+    [Inject] public NavigationManager Navigation { get; set; } = default!;
+
+    private void NavigateToFidoProvisioning()
+    {
+        Navigation.NavigateTo("/fido-provisioning");
+    }
+
+    private void NavigateToMyKeys()
+    {
+        Navigation.NavigateTo("/my-fido2-keys");
+    }
+}
