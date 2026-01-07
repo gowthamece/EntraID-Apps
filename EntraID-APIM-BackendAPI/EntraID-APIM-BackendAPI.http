@@ -1,0 +1,6 @@
+@EntraID_APIM_BackendAPI_HostAddress = http://localhost:5227
+
+GET {{EntraID_APIM_BackendAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

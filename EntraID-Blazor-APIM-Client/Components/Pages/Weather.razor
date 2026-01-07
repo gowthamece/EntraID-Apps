@@ -1,0 +1,170 @@
+﻿@page "/weather"
+@using EntraID_Blazor_APIM_Client.Services
+@inject ApiService ApiService
+@inject AuthService AuthService
+@inject AuthenticationInfo AuthInfo
+@rendermode InteractiveServer
+
+<PageTitle>Weather from APIM</PageTitle>
+
+<h1>Weather Forecast from APIM</h1>
+
+<div class="alert alert-info" role="alert">
+    <strong>🔐 Authentication Method:</strong> @AuthService.GetAuthMethod()
+</div>
+
+<p>This component demonstrates fetching data from APIM using App Role authentication.</p>
+
+@if (authMessage != null)
+{
+    <div class="alert @(authSuccess ? "alert-success" : "alert-warning")">
+        <strong>@(authSuccess ? "✓" : "⚠")</strong> @authMessage
+    </div>
+}
+
+@if (loading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">
+        <strong>Error:</strong> @errorMessage
+        
+        @if (errorMessage.Contains("authentication") || errorMessage.Contains("token") || errorMessage.Contains("expired"))
+        {
+            <hr />
+            <p><strong>Authentication may have expired. Try re-authenticating:</strong></p>
+            <div class="btn-group" role="group">
+                <button class="btn btn-warning" @onclick="TriggerInteractiveLogin" disabled="@authenticating">
+                    @(authenticating ? "Authenticating..." : "🔐 Interactive Browser Login")
+                </button>
+                <button class="btn btn-secondary" @onclick="TriggerAzureCliLogin" disabled="@authenticating">
+                    @(authenticating ? "Authenticating..." : "⚙️ Azure CLI Login")
+                </button>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-success">
+        <strong>Success!</strong> Data received from API.
+    </div>
+    <pre>@weatherData</pre>
+}
+
+<div class="btn-toolbar mt-3" role="toolbar">
+    <div class="btn-group me-2" role="group">
+        <button class="btn btn-primary" @onclick="LoadWeatherData" disabled="@loading">
+            @(loading ? "Loading..." : "🔄 Refresh Data")
+        </button>
+    </div>
+    <div class="btn-group" role="group">
+        <button class="btn btn-outline-warning" @onclick="TriggerInteractiveLogin" disabled="@(loading || authenticating)">
+            @(authenticating ? "Authenticating..." : "🔐 Re-authenticate (Browser)")
+        </button>
+        <button class="btn btn-outline-secondary" @onclick="TriggerAzureCliLogin" disabled="@(loading || authenticating)">
+            @(authenticating ? "Authenticating..." : "⚙️ Re-authenticate (CLI)")
+        </button>
+    </div>
+</div>
+
+@code {
+    private bool loading = false;
+    private bool authenticating = false;
+    private string? weatherData;
+    private string? errorMessage;
+    private string? authMessage;
+    private bool authSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadWeatherData();
+    }
+
+    private async Task LoadWeatherData()
+    {
+        loading = true;
+        errorMessage = null;
+        authMessage = null;
+        
+        try
+        {
+            weatherData = await ApiService.GetWeatherForecastAsync();
+            
+            if (weatherData.StartsWith("Error:") || weatherData.StartsWith("Exception:"))
+            {
+                errorMessage = weatherData;
+                weatherData = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Exception: {ex.Message}";
+            weatherData = null;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task TriggerInteractiveLogin()
+    {
+        authenticating = true;
+        authMessage = null;
+        
+        try
+        {
+            var (success, message) = await AuthService.TriggerInteractiveLoginAsync();
+            authSuccess = success;
+            authMessage = message;
+
+            if (success)
+            {
+                // Automatically retry loading data after successful authentication
+                await Task.Delay(500);
+                await LoadWeatherData();
+            }
+        }
+        catch (Exception ex)
+        {
+            authSuccess = false;
+            authMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            authenticating = false;
+        }
+    }
+
+    private async Task TriggerAzureCliLogin()
+    {
+        authenticating = true;
+        authMessage = null;
+        
+        try
+        {
+            var (success, message) = await AuthService.TriggerAzureCliLoginAsync();
+            authSuccess = success;
+            authMessage = message;
+
+            if (success)
+            {
+                // Automatically retry loading data after successful authentication
+                await Task.Delay(500);
+                await LoadWeatherData();
+            }
+        }
+        catch (Exception ex)
+        {
+            authSuccess = false;
+            authMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            authenticating = false;
+        }
+    }
+}
