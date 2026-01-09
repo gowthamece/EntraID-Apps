@@ -4,3 +4,14 @@ GET {{EntraID_APIM_BackendAPI_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+POST {{EntraID_APIM_BackendAPI_HostAddress}}/users
+Content-Type: application/json
+
+{
+    "id": 1,
+    "name": "John Doe",
+    "age": 30
+}
+
+###

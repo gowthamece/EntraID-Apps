@@ -48,9 +48,24 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast")
 .WithOpenApi();
 
+// POST endpoint for user testing - returns the same user object
+app.MapPost("/users", (User user) =>
+{
+    // Echo back the same user object for testing purposes
+    return Results.Ok(user);
+})
+.RequireAuthorization()
+.WithName("CreateUser")
+.WithOpenApi();
+
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
+/// <summary>
+/// User model for POST endpoint testing
+/// </summary>
+record User(int Id, string Name, int Age);
