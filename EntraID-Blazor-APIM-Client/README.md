@@ -6,11 +6,18 @@ Complete end-to-end solution demonstrating secure authentication and authorizati
 
 This solution includes:
 
-1. **Blazor .NET 8 Client App** - Interactive server-side app with Entra ID authentication
-2. **Backend Web API** - Protected API with JWT validation
-3. **Azure APIM** - API Gateway with JWT validation and rate limiting
-4. **Azure VM Deployment** - Hosting the Blazor app with Managed Identity
-5. **Complete Auth Flow** - OAuth 2.0 / OpenID Connect implementation
+1. **Blazor .NET 8 Client App** - Interactive server-side app with Managed Identity authentication
+2. **Backend Web API** - Protected API with JWT validation and App Roles
+3. **Azure APIM** - API Gateway with JWT validation policy
+4. **Azure VM Deployment** - Hosting the Blazor app with User-Assigned Managed Identity
+5. **Complete Auth Flow** - OAuth 2.0 Client Credentials with Managed Identity
+
+## 🔐 Security Highlights
+
+- **No credentials in code** - Managed Identity eliminates secrets from configuration
+- **App Role-based access** - Only authorized identities can call the API
+- **JWT validation at APIM** - Token verification before reaching backend
+- **Audit trail** - All access logged in Azure AD and APIM analytics
 
 ## 🏗️ Architecture
 
@@ -20,29 +27,34 @@ This solution includes:
 └────────┬────────┘
          │ 1. Navigate to App
          ↓
-┌─────────────────────────┐
-│  Blazor Client (Azure VM)│
-│  + Entra ID Auth         │
-└────────┬────────────────┘
-         │ 2. Login Redirect
+┌─────────────────────────────────────┐
+│  Azure VM (IIS)                     │
+│  Blazor Client Application          │
+│  User-Assigned Managed Identity     │
+│  (mi-blazor-apim-client)            │
+│  Client ID: YOUR_MI_CLIENT_ID       │
+└────────┬────────────────────────────┘
+         │ 2. Request Token (No credentials)
          ↓
-┌─────────────────────────┐
-│  Microsoft Entra ID     │
-│  (OAuth 2.0 / OIDC)     │
-└────────┬────────────────┘
-         │ 3. Access Token
+┌─────────────────────────────────────┐
+│  Microsoft Entra ID                 │
+│  Token: api://YOUR_API_ID/.default  │
+│  App Role: weather.read             │
+└────────┬────────────────────────────┘
+         │ 3. JWT Access Token
          ↓
-┌─────────────────────────┐
-│  Azure APIM             │
-│  + JWT Validation       │
-│  + Managed Identity     │
-└────────┬────────────────┘
+┌─────────────────────────────────────┐
+│  Azure API Management               │
+│  validate-jwt Policy                │
+│  - Verify issuer & audience         │
+│  - Check required roles             │
+└────────┬────────────────────────────┘
          │ 4. Validated Request
          ↓
-┌─────────────────────────┐
-│  Backend API            │
-│  + JWT Authorization    │
-└─────────────────────────┘
+┌─────────────────────────────────────┐
+│  Backend API                        │
+│  /weather/forecast                  │
+└─────────────────────────────────────┘
 ```
 
 ## 📋 Prerequisites
@@ -86,15 +98,69 @@ Follow detailed steps in [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md#step-1-crea
 ```json
 {
   "AzureAd": {
-    "TenantId": "YOUR_TENANT_ID",
-    "ClientId": "YOUR_BLAZOR_CLIENT_ID",
-    "ClientSecret": "YOUR_CLIENT_SECRET"
+    "TenantId": "YOUR_TENANT_ID_HERE",
+    "ClientId": "YOUR_MANAGED_IDENTITY_CLIENT_ID_HERE",
+    "UseManagedIdentity": true,
+    "UseClientCredentials": false
   },
   "BackendAPI": {
-    "BaseUrl": "https://apim-pi-tracking.azure-api.net",
-    "Scopes": "api://YOUR_API_CLIENT_ID/.default"
+    "BaseUrl": "https://your-apim-instance.azure-api.net",
+    "Scopes": "api://YOUR_BACKEND_API_APP_ID_HERE/.default"
   }
 }
+```
+
+## 🔑 Managed Identity Setup
+
+### 1. Create User-Assigned Managed Identity
+
+```powershell
+# In Azure Portal: Managed Identities → Create
+# Name: mi-blazor-apim-client
+# Note the Client ID: 29fb906c-820b-4440-acd1-6baab44bfd42
+```
+
+### 2. Assign App Role to Managed Identity
+
+```powershell
+Connect-AzAccount
+
+$managedIdentityClientId = "YOUR_MANAGED_IDENTITY_CLIENT_ID_HERE"
+$backendApiAppId = "YOUR_BACKEND_API_APP_ID_HERE"
+
+$miSP = Get-AzADServicePrincipal -Filter "appId eq '$managedIdentityClientId'"
+$apiSP = Get-AzADServicePrincipal -Filter "appId eq '$backendApiAppId'"
+
+# Assign the weather.read role
+New-AzADServicePrincipalAppRoleAssignment `
+    -ServicePrincipalId $miSP.Id `
+    -ResourceId $apiSP.Id `
+    -AppRoleId "YOUR_APP_ROLE_ID_HERE"
+```
+
+### 3. Assign Identity to VM
+
+```
+Azure Portal → Virtual Machine → Identity → User assigned → Add
+Select: mi-blazor-apim-client
+```
+
+### 4. Configure APIM JWT Validation Policy
+
+```xml
+<inbound>
+    <validate-jwt header-name="Authorization" failed-validation-httpcode="401">
+        <openid-config url="https://login.microsoftonline.com/YOUR_TENANT_ID_HERE/v2.0/.well-known/openid-configuration" />
+        <audiences>
+            <audience>api://YOUR_BACKEND_API_APP_ID_HERE</audience>
+        </audiences>
+        <required-claims>
+            <claim name="roles" match="any">
+                <value>weather.read</value>
+            </claim>
+        </required-claims>
+    </validate-jwt>
+</inbound>
 ```
 
 ### 4. Test Locally
@@ -163,13 +229,23 @@ EntraID-Apps/
 
 ## 🔐 Authentication Flow
 
-1. **User accesses Blazor app** → Redirected to Microsoft login
-2. **User signs in** → Entra ID returns ID token and access token
-3. **User navigates to /weather** → App calls API via APIM
+1. **User accesses Blazor app** → Application loads on Azure VM
+2. **App needs API data** → Requests token using Managed Identity
+3. **Entra ID validates MI** → Issues JWT with `weather.read` role
 4. **Token included in request** → `Authorization: Bearer {token}`
-5. **APIM validates JWT** → Checks audience, issuer, expiration
-6. **APIM forwards to backend** → Backend validates token again
+5. **APIM validates JWT** → Checks audience, issuer, and roles
+6. **APIM forwards to backend** → Only if token is valid
 7. **API returns data** → Displayed in Blazor app
+
+## 🛡️ Why Managed Identity?
+
+| Traditional Approach | Managed Identity Approach |
+|---------------------|---------------------------|
+| Store secrets in config | No secrets needed |
+| Rotate credentials manually | Azure handles rotation |
+| Risk of credential exposure | Zero credential exposure |
+| Complex token refresh logic | Automatic token management |
+| Hard to audit | Full audit trail in Azure AD |
 
 ## 🔧 Configuration Details
 
@@ -326,6 +402,6 @@ Created as part of the EntraID-Apps project collection.
 
 ---
 
-**Last Updated:** January 5, 2026
+**Last Updated:** January 14, 2026
 
-**Version:** 1.0.0
+**Version:** 2.0.0 - Added Managed Identity Support

@@ -8,30 +8,52 @@ var builder = WebApplication.CreateBuilder(args);
 TokenCredential credential;
 string authMethod;
 
-var tenantId = "YOUR_TENANT_ID_HERE";
-
+var tenantId = builder.Configuration["AzureAd:TenantId"] ?? "YOUR_TENANT_ID_HERE";
+var clientId = builder.Configuration["AzureAd:ClientId"] ?? "YOUR_CLIENT_ID_HERE";
+var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
+var useManagedIdentity = builder.Configuration.GetValue<bool>("AzureAd:UseManagedIdentity");
+var useClientCredentials = builder.Configuration.GetValue<bool>("AzureAd:UseClientCredentials");
 
 try
 {
-    credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+    if (useManagedIdentity)
     {
-        TenantId = tenantId,
-        ExcludeEnvironmentCredential = true,  // Exclude client secret from env vars
-        ExcludeWorkloadIdentityCredential = true,
-        ExcludeManagedIdentityCredential = true, 
-        ExcludeVisualStudioCredential = false,  // Try Visual Studio first
-        ExcludeVisualStudioCodeCredential = true,  
-        ExcludeAzureCliCredential = false,  // Enable Azure CLI as fallback
-        ExcludeAzurePowerShellCredential = true,  
-        ExcludeInteractiveBrowserCredential = true 
-    });
-    
-    authMethod = "DefaultAzureCredential (Developer Identity)";
-    
+        // Use Managed Identity with specific client ID (User-Assigned Managed Identity)
+        // This requires a User-Assigned Managed Identity assigned to the VM
+        credential = new ManagedIdentityCredential(clientId);
+        authMethod = $"Managed Identity (Client ID: {clientId})";
+        Console.WriteLine($"Using Managed Identity with Client ID: {clientId}");
+    }
+    else if (useClientCredentials && !string.IsNullOrEmpty(clientSecret))
+    {
+        // Use Client Credentials flow with App Registration
+        // This uses the app's client ID and secret to authenticate
+        credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+        authMethod = $"Client Credentials (App ID: {clientId})";
+        Console.WriteLine($"Using Client Credentials with App ID: {clientId}");
+    }
+    else
+    {
+        // Fallback to DefaultAzureCredential for local development
+        credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+        {
+            TenantId = tenantId,
+            ManagedIdentityClientId = clientId, // Use specific MI if available
+            ExcludeEnvironmentCredential = true,
+            ExcludeWorkloadIdentityCredential = true,
+            ExcludeManagedIdentityCredential = false, // Enable Managed Identity
+            ExcludeVisualStudioCredential = false,
+            ExcludeVisualStudioCodeCredential = false,
+            ExcludeAzureCliCredential = false,
+            ExcludeAzurePowerShellCredential = true,
+            ExcludeInteractiveBrowserCredential = true
+        });
+        authMethod = "DefaultAzureCredential (Managed Identity or Developer Identity)";
+    }
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"DefaultAzureCredential setup failed: {ex.Message}");
+    Console.WriteLine($"Credential setup failed: {ex.Message}");
     throw;
 }
 
@@ -60,6 +82,9 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
+
+// Set the path base for IIS virtual application deployment
+app.UsePathBase("/BlazorApiClient");
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
