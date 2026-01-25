@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entra-ID-MVC-App", "Entra-I
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntraID-APIM-IntegrationTests", "EntraID-APIM-IntegrationTests\EntraID-APIM-IntegrationTests.csproj", "{94FF3C25-CB1A-424D-9006-FA365532B9ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntraID_MI_ShareFile", "EntraID_MI_ShareFile\EntraID_MI_ShareFile.csproj", "{B27EF40A-E47E-40FD-8874-3A5CB09683D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +127,18 @@ Global
 		{94FF3C25-CB1A-424D-9006-FA365532B9ED}.Release|x64.Build.0 = Release|Any CPU
 		{94FF3C25-CB1A-424D-9006-FA365532B9ED}.Release|x86.ActiveCfg = Release|Any CPU
 		{94FF3C25-CB1A-424D-9006-FA365532B9ED}.Release|x86.Build.0 = Release|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Debug|x64.Build.0 = Debug|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Debug|x86.Build.0 = Debug|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Release|x64.ActiveCfg = Release|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Release|x64.Build.0 = Release|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Release|x86.ActiveCfg = Release|Any CPU
+		{B27EF40A-E47E-40FD-8874-3A5CB09683D5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
