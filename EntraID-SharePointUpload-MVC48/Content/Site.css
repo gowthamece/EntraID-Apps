@@ -1,0 +1,112 @@
+:root {
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --ink: #1f2a37;
+    --muted: #5f6c7b;
+    --brand: #0a66c2;
+    --brand-2: #004182;
+    --ok: #0f766e;
+    --error: #b91c1c;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #f7fafc 0%, #eef2f7 100%);
+    color: var(--ink);
+}
+
+.container {
+    width: min(920px, 92%);
+    margin: 0 auto;
+}
+
+.topbar {
+    background: var(--card);
+    border-bottom: 1px solid #dde4ed;
+    position: sticky;
+    top: 0;
+}
+
+.topbar .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 64px;
+}
+
+.brand {
+    color: var(--brand-2);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.body-content {
+    padding: 24px 0 48px;
+}
+
+.hero {
+    background: var(--card);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.form-row {
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.text-input {
+    border: 1px solid #c9d3df;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.btn {
+    border: 1px solid #c7d2de;
+    background: #fff;
+    color: #0f172a;
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+}
+
+.auth-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status {
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 10px 0 14px;
+}
+
+.status.ok {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: var(--ok);
+}
+
+.status.error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: var(--error);
+}
+
+.field-validation-error {
+    color: var(--error);
+    font-size: 13px;
+}

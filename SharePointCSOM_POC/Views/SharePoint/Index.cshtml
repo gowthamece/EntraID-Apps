@@ -1,0 +1,48 @@
+@model SharePointCSOM_POC.Models.SharePointUploadViewModel
+@{
+    ViewBag.Title = "Upload File";
+}
+
+<h2>Upload File to SharePoint</h2>
+
+<div class="status" style="background:#f8fafc;border:1px solid #dbeafe;color:#0f172a;">
+    <strong>Token diagnostics (application token)</strong>
+    @if (!string.IsNullOrWhiteSpace(Model.TokenDiagnosticsError))
+    {
+        <div class="status error" style="margin-top:10px;">Failed to read token diagnostics: @Model.TokenDiagnosticsError</div>
+    }
+    else
+    {
+        <div style="margin-top:8px;"><strong>aud:</strong> @Model.TokenAudience</div>
+        <div><strong>roles:</strong> @Model.TokenRoles</div>
+        <div><strong>scp:</strong> @Model.TokenScope</div>
+        <div><strong>tid:</strong> @Model.TokenTenantId</div>
+        <div><strong>appid:</strong> @Model.TokenClientAppId</div>
+        <div><strong>appidacr:</strong> @Model.TokenAppIdAcr</div>
+        <div><strong>exp (UTC):</strong> @Model.TokenExpiresUtc</div>
+    }
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.ResultMessage))
+{
+    <div class="status @(Model.Success ? "ok" : "error")">@Model.ResultMessage</div>
+}
+
+@using (Html.BeginForm("Index", "SharePoint", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-row">
+        @Html.LabelFor(m => m.TargetFolderServerRelativeUrl)
+        @Html.TextBoxFor(m => m.TargetFolderServerRelativeUrl, new { @class = "text-input", placeholder = "/sites/YOUR_SITE/Shared Documents" })
+        @Html.ValidationMessageFor(m => m.TargetFolderServerRelativeUrl)
+    </div>
+
+    <div class="form-row">
+        @Html.LabelFor(m => m.UploadFile)
+        <input type="file" name="UploadFile" class="text-input" />
+        @Html.ValidationMessageFor(m => m.UploadFile)
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+}

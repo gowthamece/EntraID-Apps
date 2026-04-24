@@ -1,0 +1,30 @@
+@model EntraID.SharePointUpload.Mvc48.Models.SharePointUploadViewModel
+@{
+    ViewBag.Title = "Upload File";
+}
+
+<h2>Upload File to SharePoint</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.ResultMessage))
+{
+    <div class="status @(Model.Success ? "ok" : "error")">@Model.ResultMessage</div>
+}
+
+@using (Html.BeginForm("Index", "SharePoint", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-row">
+        @Html.LabelFor(m => m.TargetFolderServerRelativeUrl)
+        @Html.TextBoxFor(m => m.TargetFolderServerRelativeUrl, new { @class = "text-input", placeholder = "/sites/YOUR_SITE/Shared Documents" })
+        @Html.ValidationMessageFor(m => m.TargetFolderServerRelativeUrl)
+    </div>
+
+    <div class="form-row">
+        @Html.LabelFor(m => m.UploadFile)
+        <input type="file" name="UploadFile" class="text-input" />
+        @Html.ValidationMessageFor(m => m.UploadFile)
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+}

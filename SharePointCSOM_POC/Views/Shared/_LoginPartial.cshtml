@@ -1,0 +1,17 @@
+@if (Request.IsAuthenticated)
+{
+    <div class="auth-block">
+        <span>Hello, @User.Identity.Name</span>
+        @using (Html.BeginForm("SignOut", "Account", FormMethod.Post, new { id = "logoutForm" }))
+        {
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-light btn-sm ms-2">Sign out</button>
+        }
+    </div>
+}
+else
+{
+    <div class="auth-block">
+        <a class="btn btn-outline-light btn-sm" href="@Url.Action("SignIn", "Account")">Sign in</a>
+    </div>
+}

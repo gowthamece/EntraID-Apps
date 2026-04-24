@@ -1,0 +1,17 @@
+@{
+    ViewBag.Title = "Home";
+}
+
+<section class="hero">
+    <h1>SharePoint CSOM File Upload</h1>
+    <p>This MVC .NET Framework 4.8 app authenticates with Microsoft Entra ID and uploads files using SharePoint CSOM.</p>
+
+    @if (!Request.IsAuthenticated)
+    {
+        <a class="btn btn-primary" href="@Url.Action("SignIn", "Account", new { returnUrl = Url.Action("Index", "SharePoint") })">Sign in with Microsoft</a>
+    }
+    else
+    {
+        <a class="btn btn-primary" href="@Url.Action("Index", "SharePoint")">Go to Upload Page</a>
+    }
+</section>

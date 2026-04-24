@@ -1,0 +1,55 @@
+﻿:root {
+    --ok: #0f766e;
+    --error: #b91c1c;
+}
+
+.body-content {
+    margin-top: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.form-row {
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.text-input {
+    border: 1px solid #c9d3df;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    max-width: 620px;
+}
+
+.auth-block {
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status {
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 10px 0 14px;
+}
+
+.status.ok {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: var(--ok);
+}
+
+.status.error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: var(--error);
+}
+
+.field-validation-error {
+    color: var(--error);
+    font-size: 13px;
+}
