@@ -1,5 +1,6 @@
 @{
     ViewData["Title"] = "Home Page";
+    var draftMessage = Context.Request.Cookies["DraftMessage"];
 }
 
 <div class="text-center">
@@ -9,3 +10,99 @@
 
 <div>Graph API result</div>
 <div>@ViewData["GraphApiResult"]</div>
+
+<hr />
+
+<form asp-action="SubmitForm" method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label for="message" class="form-label">Message</label>
+        <input id="message" name="message" class="form-control" value="@draftMessage" />
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+@if (ViewData["SessionExpiredMessage"] != null)
+{
+    <div class="alert alert-warning mt-3">@ViewData["SessionExpiredMessage"]</div>
+}
+
+@if (ViewData["PostMessage"] != null)
+{
+    <div class="alert alert-info mt-3">@ViewData["PostMessage"]</div>
+}
+
+<hr />
+
+<div><strong>auth_time:</strong> @ViewData["AuthTime"]</div>
+<div><strong>ID token expiry time:</strong> @ViewData["IdTokenExpiryTime"]</div>
+<div><strong>ID token remaining time:</strong> @ViewData["IdTokenRemainingTime"]</div>
+
+<hr />
+
+<h3>All claims</h3>
+<ul>
+@foreach (var claim in (IEnumerable<string>)(ViewData["AllClaims"] ?? Array.Empty<string>()))
+{
+    <li>@claim</li>
+}
+</ul>
+
+<script>
+    (function () {
+        var input = document.getElementById('message');
+        if (!input) return;
+        var form = input.closest('form');
+        var storageKey = 'EntraIdMvcApp.Home.Index.MessageDraft';
+        var isSubmitting = false;
+
+        if (!input.value) {
+            var saved = sessionStorage.getItem(storageKey);
+            if (saved) {
+                input.value = saved;
+            }
+        }
+
+        input.addEventListener('input', function () {
+            sessionStorage.setItem(storageKey, input.value);
+        });
+
+        async function isSessionActive() {
+            try {
+                var response = await fetch('@Url.Action("SessionStatus", "Home")', {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                return response.ok;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        if (form) {
+            form.addEventListener('submit', async function (event) {
+                if (isSubmitting) {
+                    return;
+                }
+
+                event.preventDefault();
+                sessionStorage.setItem(storageKey, input.value);
+
+                var active = await isSessionActive();
+                if (!active) {
+                    window.location.href = '@Url.Action("Index", "Home")';
+                    return;
+                }
+
+                isSubmitting = true;
+                form.submit();
+            });
+        }
+
+        var clearDraft = '@ViewData["ClearDraft"]' === 'true';
+        if (clearDraft) {
+            sessionStorage.removeItem(storageKey);
+        }
+    })();
+</script>
