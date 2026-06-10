@@ -11,7 +11,6 @@ $graphAppId = "00000003-0000-0000-c000-000000000000"
 # Microsoft Graph App Role IDs
 $directoryReadAllRoleId = "7ab1d382-f21e-4acd-a863-ba3e13f7da61" # Directory.Read.All
 $groupReadAllRoleId     = "5b567255-7703-4780-807c-7be8301ae99b" # Group.Read.All
-$userReadRoleId         = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
 $userReadAllRoleId      = "df021288-bdef-4463-88db-98f22de89214" # User.Read.All
 
 # ---------------------------
@@ -31,7 +30,7 @@ az account set --subscription (az account show --query id -o tsv)
 # ---------------------------
 
 Write-Output "Connecting to Microsoft Graph..."
-Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All AppRoleAssignment.ReadWrite.All"
+Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All"
 
 # ---------------------------
 # RESOLVE SERVICE PRINCIPALS
@@ -64,7 +63,6 @@ Write-Output "✔ Microsoft Graph Service Principal Found: $($graphSp.Id)"
 $graphPermissions = @(
     @{ Name = "Directory.Read.All"; AppRoleId = $directoryReadAllRoleId },
     @{ Name = "Group.Read.All";     AppRoleId = $groupReadAllRoleId },
-    @{ Name = "User.Read";          AppRoleId = $userReadRoleId },
     @{ Name = "User.Read.All";      AppRoleId = $userReadAllRoleId }
 )
 
