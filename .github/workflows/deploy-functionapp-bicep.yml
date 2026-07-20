@@ -69,7 +69,7 @@ jobs:
           echo "GitHub environment: dev"
           echo "AZURE_CLIENT_ID (masked): $(mask_tail "$AZURE_CLIENT_ID")"
           echo "AZURE_TENANT_ID (masked): $(mask_tail "$AZURE_TENANT_ID")"
-          echo "AZURE_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID"
+          echo "AZURE_SUBSCRIPTION_ID (masked): $(mask_tail "$AZURE_SUBSCRIPTION_ID")"
 
       - name: Validate required variables
         run: |
