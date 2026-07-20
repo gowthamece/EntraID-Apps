@@ -102,7 +102,8 @@ jobs:
         env:
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
-          subscription_tail="$(printf '%s' "$AZURE_SUBSCRIPTION_ID" | tail -c 4)"
+          subscription_tail="$(printf '%s' "$AZURE_SUBSCRIPTION_ID" | rev | cut -c 1-4 | rev)"
+          configured_subscription_id="$(printf '%s' "$AZURE_SUBSCRIPTION_ID" | tr '[:upper:]' '[:lower:]')"
           echo "=== Subscription ID configured in secret (tail): ****${subscription_tail} ==="
           echo "AZURE_SUBSCRIPTION_ID length: ${#AZURE_SUBSCRIPTION_ID}"
           echo "=== Tenant of logged-in identity ==="
@@ -110,8 +111,8 @@ jobs:
           echo "=== All subscriptions this identity can access ==="
           az account list --all --output table || echo "Unable to list subscriptions."
           echo "=== Checking whether the configured subscription is accessible ==="
-          accessible_subscription_ids="$(az account list --all --query "[].id" -o tsv 2>/dev/null || true)"
-          if printf '%s\n' "$accessible_subscription_ids" | grep -qix "$AZURE_SUBSCRIPTION_ID"; then
+          accessible_subscription_ids="$(az account list --all --query "[].id" -o tsv 2>/dev/null | tr '[:upper:]' '[:lower:]' || true)"
+          if printf '%s\n' "$accessible_subscription_ids" | grep -qxF "$configured_subscription_id"; then
             echo "MATCH: The configured AZURE_SUBSCRIPTION_ID is visible to this identity."
           else
             echo "MISMATCH: The configured AZURE_SUBSCRIPTION_ID is NOT accessible."
