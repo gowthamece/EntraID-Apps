@@ -43,6 +43,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug Azure identity values
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          mask_tail() {
+            value="$1"
+            if [ -z "$value" ]; then
+              echo "<empty>"
+              return
+            fi
+            length=${#value}
+            if [ "$length" -le 4 ]; then
+              echo "****"
+              return
+            fi
+            echo "****${value: -4}"
+          }
+
+          echo "GitHub repository: ${{ github.repository }}"
+          echo "GitHub actor: ${{ github.actor }}"
+          echo "GitHub ref: ${{ github.ref }}"
+          echo "GitHub environment: dev"
+          echo "AZURE_CLIENT_ID (masked): $(mask_tail "$AZURE_CLIENT_ID")"
+          echo "AZURE_TENANT_ID (masked): $(mask_tail "$AZURE_TENANT_ID")"
+          echo "AZURE_SUBSCRIPTION_ID (masked): $(mask_tail "$AZURE_SUBSCRIPTION_ID")"
+
       - name: Validate required variables
         run: |
           if [ -z "${{ vars.AZURE_RESOURCE_GROUP_DEV }}" ]; then
@@ -94,6 +122,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Debug Azure identity values
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          mask_tail() {
+            value="$1"
+            if [ -z "$value" ]; then
+              echo "<empty>"
+              return
+            fi
+            length=${#value}
+            if [ "$length" -le 4 ]; then
+              echo "****"
+              return
+            fi
+            echo "****${value: -4}"
+          }
+
+          echo "GitHub repository: ${{ github.repository }}"
+          echo "GitHub actor: ${{ github.actor }}"
+          echo "GitHub ref: ${{ github.ref }}"
+          echo "GitHub environment: prod"
+          echo "AZURE_CLIENT_ID (masked): $(mask_tail "$AZURE_CLIENT_ID")"
+          echo "AZURE_TENANT_ID (masked): $(mask_tail "$AZURE_TENANT_ID")"
+          echo "AZURE_SUBSCRIPTION_ID (masked): $(mask_tail "$AZURE_SUBSCRIPTION_ID")"
 
       - name: Validate required variables
         run: |
