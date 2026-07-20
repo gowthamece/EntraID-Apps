@@ -47,13 +47,31 @@ az deployment group create \
 
 Workflow file: `.github/workflows/deploy-functionapp-bicep.yml`
 
-Required repository settings:
+### Azure AD app registration (OIDC)
+
+The workflow uses OpenID Connect (OIDC) federated credentials. Before the workflow can authenticate, you must configure the app registration in Azure AD:
+
+1. Create an app registration in Azure AD (Entra ID).
+2. Grant the app registration the **Contributor** role on the target subscription or resource groups.
+3. Add two federated credentials to the app registration, one per GitHub environment:
+
+   | Field | Value (dev) | Value (prod) |
+   |---|---|---|
+   | Issuer | `https://token.actions.githubusercontent.com` | `https://token.actions.githubusercontent.com` |
+   | Subject identifier | `repo:gowthamece/EntraID-Apps:environment:dev` | `repo:gowthamece/EntraID-Apps:environment:prod` |
+   | Audience | `api://AzureADTokenExchange` | `api://AzureADTokenExchange` |
+
+   > **Important:** The subject identifier must match the GitHub environment name exactly. Replace `gowthamece/EntraID-Apps` with your actual `<owner>/<repository>` if you fork or rename this repository.
+
+### Required repository settings
 
 - Variable: `AZURE_RESOURCE_GROUP_DEV`
 - Variable: `AZURE_RESOURCE_GROUP_PROD`
-- Secret: `AZURE_CLIENT_ID`
-- Secret: `AZURE_TENANT_ID`
-- Secret: `AZURE_SUBSCRIPTION_ID`
+- Secret: `AZURE_CLIENT_ID` — the Application (client) ID of the app registration above
+- Secret: `AZURE_TENANT_ID` — the Directory (tenant) ID of the app registration above
+- Secret: `AZURE_SUBSCRIPTION_ID` — the Azure subscription ID (GUID) where resources will be deployed
+
+> **Troubleshooting:** If the workflow fails with *"The subscription … doesn't exist in cloud 'AzureCloud'"*, verify that `AZURE_SUBSCRIPTION_ID` contains the correct subscription GUID and that the app registration has been granted access to that subscription.
 
 The workflow is restricted to runs where `github.actor` is `gowthamece`.
 

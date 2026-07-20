@@ -100,6 +100,7 @@ jobs:
       - name: Validate Bicep
         run: |
           az deployment group validate \
+            --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP_DEV }}" \
             --template-file "${{ env.TEMPLATE_FILE }}" \
             --parameters "@${{ env.DEV_PARAMETERS_FILE }}"
@@ -107,6 +108,7 @@ jobs:
       - name: Deploy Bicep to Dev
         run: |
           az deployment group create \
+            --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP_DEV }}" \
             --template-file "${{ env.TEMPLATE_FILE }}" \
             --parameters "@${{ env.DEV_PARAMETERS_FILE }}"
@@ -149,7 +151,7 @@ jobs:
           echo "GitHub environment: prod"
           echo "AZURE_CLIENT_ID (masked): $(mask_tail "$AZURE_CLIENT_ID")"
           echo "AZURE_TENANT_ID (masked): $(mask_tail "$AZURE_TENANT_ID")"
-          echo "AZURE_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID"
+          echo "AZURE_SUBSCRIPTION_ID (masked): $(mask_tail "$AZURE_SUBSCRIPTION_ID")"
 
       - name: Validate required variables
         run: |
@@ -180,6 +182,7 @@ jobs:
       - name: Validate Bicep
         run: |
           az deployment group validate \
+            --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP_PROD }}" \
             --template-file "${{ env.TEMPLATE_FILE }}" \
             --parameters "@${{ env.PROD_PARAMETERS_FILE }}"
@@ -187,6 +190,7 @@ jobs:
       - name: Deploy Bicep to Prod
         run: |
           az deployment group create \
+            --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP_PROD }}" \
             --template-file "${{ env.TEMPLATE_FILE }}" \
             --parameters "@${{ env.PROD_PARAMETERS_FILE }}"
