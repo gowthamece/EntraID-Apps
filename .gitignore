@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /MS_Entra_ID_Blazor_Server/Properties/ServiceDependencies/blazorapp-dev01 - Web Deploy1
 /MS_Entra_ID_Blazor_Server/MANAGED_IDENTITY_SETUP.md
 /MS_Entra_ID_Blazor_Server/BlogPost-ManagedIdentity-Implementation.md
+/Entra-ID-FunctionApp/Infra/main.json
