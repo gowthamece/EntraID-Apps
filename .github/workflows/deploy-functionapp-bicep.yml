@@ -3,7 +3,7 @@ name: Deploy Function App Infra
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - Entra-ID-FunctionApp/Infra/**
       - .github/workflows/deploy-functionapp-bicep.yml
