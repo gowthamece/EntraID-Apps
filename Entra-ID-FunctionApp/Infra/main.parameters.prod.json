@@ -1,0 +1,39 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "functionAppName": {
+      "value": "func-entra-auth-prod"
+    },
+    "storageAccountName": {
+      "value": "stentraauthprod001"
+    },
+    "appServicePlanName": {
+      "value": "func-entra-auth-prod-plan"
+    },
+    "appInsightsName": {
+      "value": "func-entra-auth-prod-appi"
+    },
+    "maximumInstanceCount": {
+      "value": 200
+    },
+    "instanceMemoryMB": {
+      "value": 2048
+    },
+    "entraTenantId": {
+      "value": "6e01b1f9-b1e5-4073-ac97-778069a0ad64"
+    },
+    "entraAppId": {
+      "value": "84a651ee-de65-4753-ba10-f89389c9308d"
+    },
+    "entraAudience": {
+      "value": "2766a7d4-1ac2-4d65-be3f-7e6478edd00a"
+    },
+    "entraRequiredScope": {
+      "value": "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user"
+    }
+  }
+}

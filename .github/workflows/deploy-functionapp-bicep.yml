@@ -1,0 +1,136 @@
+name: Deploy Function App Infra
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - Entra-ID-FunctionApp/Infra/**
+      - .github/workflows/deploy-functionapp-bicep.yml
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-functionapp-bicep
+  cancel-in-progress: false
+
+env:
+  TEMPLATE_FILE: Entra-ID-FunctionApp/Infra/main.bicep
+  DEV_PARAMETERS_FILE: Entra-ID-FunctionApp/Infra/main.parameters.dev.json
+  PROD_PARAMETERS_FILE: Entra-ID-FunctionApp/Infra/main.parameters.prod.json
+
+jobs:
+  authorize-actor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure push is from gowthamece account
+        run: |
+          if [ "${{ github.actor }}" != "gowthamece" ]; then
+            echo "This workflow only allows deployments triggered by GitHub account: gowthamece"
+            exit 1
+          fi
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    needs: authorize-actor
+    if: ${{ needs.authorize-actor.result == 'success' }}
+    environment:
+      name: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required variables
+        run: |
+          if [ -z "${{ vars.AZURE_RESOURCE_GROUP_DEV }}" ]; then
+            echo "Repository variable AZURE_RESOURCE_GROUP_DEV is required."
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ]; then
+            echo "Repository secret AZURE_CLIENT_ID is required."
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_TENANT_ID }}" ]; then
+            echo "Repository secret AZURE_TENANT_ID is required."
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+            echo "Repository secret AZURE_SUBSCRIPTION_ID is required."
+            exit 1
+          fi
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate Bicep
+        run: |
+          az deployment group validate \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP_DEV }}" \
+            --template-file "${{ env.TEMPLATE_FILE }}" \
+            --parameters "@${{ env.DEV_PARAMETERS_FILE }}"
+
+      - name: Deploy Bicep to Dev
+        run: |
+          az deployment group create \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP_DEV }}" \
+            --template-file "${{ env.TEMPLATE_FILE }}" \
+            --parameters "@${{ env.DEV_PARAMETERS_FILE }}"
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs:
+      - authorize-actor
+      - deploy-dev
+    if: ${{ needs.authorize-actor.result == 'success' && needs.deploy-dev.result == 'success' }}
+    environment:
+      name: prod
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required variables
+        run: |
+          if [ -z "${{ vars.AZURE_RESOURCE_GROUP_PROD }}" ]; then
+            echo "Repository variable AZURE_RESOURCE_GROUP_PROD is required."
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ]; then
+            echo "Repository secret AZURE_CLIENT_ID is required."
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_TENANT_ID }}" ]; then
+            echo "Repository secret AZURE_TENANT_ID is required."
+            exit 1
+          fi
+          if [ -z "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+            echo "Repository secret AZURE_SUBSCRIPTION_ID is required."
+            exit 1
+          fi
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate Bicep
+        run: |
+          az deployment group validate \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP_PROD }}" \
+            --template-file "${{ env.TEMPLATE_FILE }}" \
+            --parameters "@${{ env.PROD_PARAMETERS_FILE }}"
+
+      - name: Deploy Bicep to Prod
+        run: |
+          az deployment group create \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP_PROD }}" \
+            --template-file "${{ env.TEMPLATE_FILE }}" \
+            --parameters "@${{ env.PROD_PARAMETERS_FILE }}"
