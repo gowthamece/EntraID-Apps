@@ -71,7 +71,7 @@ The workflow uses OpenID Connect (OIDC) federated credentials. Before the workfl
 - Secret: `AZURE_TENANT_ID` — the Directory (tenant) ID of the app registration above
 - Secret: `AZURE_SUBSCRIPTION_ID` — the Azure subscription ID (GUID) where resources will be deployed
 
-> **Troubleshooting:** If the workflow fails with *"The subscription … doesn't exist in cloud 'AzureCloud'"*, verify that `AZURE_SUBSCRIPTION_ID` contains the correct subscription GUID and that the app registration has been granted access to that subscription.
+> **Troubleshooting:** If the workflow fails with *"The subscription … doesn't exist in cloud 'AzureCloud'"*, verify that `AZURE_SUBSCRIPTION_ID` contains the correct subscription GUID and that the app registration has been granted access to that subscription or target resource group. The workflow logs in with `allow-no-subscriptions: true` so resource-group-scoped role assignments can still authenticate before the `az deployment group` commands target the subscription explicitly.
 
 The workflow is restricted to runs where `github.actor` is `gowthamece`.
 
