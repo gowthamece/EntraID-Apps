@@ -98,6 +98,27 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           allow-no-subscriptions: true
 
+      - name: Debug accessible subscriptions (dev-only)
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          subscription_tail="$(printf '%s' "$AZURE_SUBSCRIPTION_ID" | rev | cut -c 1-4 | rev)"
+          configured_subscription_id="$(printf '%s' "$AZURE_SUBSCRIPTION_ID" | tr '[:upper:]' '[:lower:]')"
+          echo "=== Subscription ID configured in secret (tail): ****${subscription_tail} ==="
+          echo "AZURE_SUBSCRIPTION_ID length: ${#AZURE_SUBSCRIPTION_ID}"
+          echo "=== Tenant of logged-in identity ==="
+          az account show --query "{name:name, id:id, tenantId:tenantId}" -o json || echo "No default subscription set."
+          echo "=== All subscriptions this identity can access ==="
+          az account list --all --output table || echo "Unable to list subscriptions."
+          echo "=== Checking whether the configured subscription is accessible ==="
+          accessible_subscription_ids="$(az account list --all --query "[].id" -o tsv 2>/dev/null | tr '[:upper:]' '[:lower:]' || true)"
+          if printf '%s\n' "$accessible_subscription_ids" | grep -qxF "$configured_subscription_id"; then
+            echo "MATCH: The configured AZURE_SUBSCRIPTION_ID is visible to this identity."
+          else
+            echo "MISMATCH: The configured AZURE_SUBSCRIPTION_ID is NOT accessible."
+            echo "Likely a dev-environment secret overriding the repo secret, or a different tenant."
+          fi
+
       - name: Validate Bicep
         run: |
           az deployment group validate \
