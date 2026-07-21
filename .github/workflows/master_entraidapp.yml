@@ -9,6 +9,10 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  PROJECT_PATH: EntraID-FunctionApp-Client/EntraID-FunctionApp-Client.csproj
+  PUBLISH_PATH: ${{ github.workspace }}/published-app
+
 jobs:
   build:
     runs-on: windows-latest
@@ -23,17 +27,20 @@ jobs:
         with:
           dotnet-version: '10.x'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - name: Restore project
+        run: dotnet restore "${{ env.PROJECT_PATH }}"
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Build project
+        run: dotnet build "${{ env.PROJECT_PATH }}" --configuration Release --no-restore
+
+      - name: Publish project
+        run: dotnet publish "${{ env.PROJECT_PATH }}" --configuration Release --output "${{ env.PUBLISH_PATH }}" --no-build
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{ env.PUBLISH_PATH }}
 
   deploy:
     runs-on: windows-latest
@@ -47,7 +54,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+          path: .net-app
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -61,5 +69,4 @@ jobs:
         with:
           app-name: 'entraidapp'
           slot-name: 'Production'
-          package: .
-          
+          package: .net-app
