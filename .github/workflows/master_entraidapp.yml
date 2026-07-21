@@ -9,6 +9,10 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  AZURE_WEBAPP_PACKAGE_PATH: 'EntraID-FunctionApp-Client'
+  DOTNET_VERSION: '10.0.x'
+
 jobs:
   build:
     runs-on: windows-latest
@@ -21,13 +25,13 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build "./${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/EntraID-FunctionApp-Client.csproj" --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish "./${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/EntraID-FunctionApp-Client.csproj" -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
