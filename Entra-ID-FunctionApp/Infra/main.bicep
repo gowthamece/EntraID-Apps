@@ -42,6 +42,9 @@ param entraAudience string = '2766a7d4-1ac2-4d65-be3f-7e6478edd00a'
 @description('Required scope claim for incoming access tokens.')
 param entraRequiredScope string = 'api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user'
 
+@description('Required app role claim for app-only tokens (managed identity/client credentials).')
+param entraRequiredAppRole string = 'access_as_application'
+
 var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
 
 resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
@@ -136,6 +139,10 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'EntraId__RequiredScope'
           value: entraRequiredScope
+        }
+        {
+          name: 'EntraId__RequiredAppRole'
+          value: entraRequiredAppRole
         }
       ]
     }

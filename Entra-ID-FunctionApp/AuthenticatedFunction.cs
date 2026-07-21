@@ -17,6 +17,7 @@ public class AuthenticatedFunction
     private readonly string _appId;
     private readonly string _audience;
     private readonly string _requiredScope;
+    private readonly string _requiredAppRole;
     private readonly OpenIdConfigurationManager _oidcConfigurationManager;
 
     public AuthenticatedFunction(ILogger<AuthenticatedFunction> logger, IConfiguration configuration)
@@ -27,6 +28,7 @@ public class AuthenticatedFunction
         _appId = configuration["EntraId:AppId"] ?? "84a651ee-de65-4753-ba10-f89389c9308d";
         _audience = configuration["EntraId:Audience"] ?? "2766a7d4-1ac2-4d65-be3f-7e6478edd00a";
         _requiredScope = configuration["EntraId:RequiredScope"] ?? "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user";
+        _requiredAppRole = configuration["EntraId:RequiredAppRole"] ?? "access_as_application";
 
         var metadataAddress = $"https://login.microsoftonline.com/{_tenantId}/v2.0/.well-known/openid-configuration";
         _oidcConfigurationManager = new OpenIdConfigurationManager(
@@ -52,9 +54,9 @@ public class AuthenticatedFunction
             return await CreateResponseAsync(req, HttpStatusCode.Unauthorized, "Token validation failed.");
         }
 
-        if (!HasRequiredScope(principal))
+        if (!HasRequiredPermission(principal))
         {
-            return await CreateResponseAsync(req, HttpStatusCode.Forbidden, "Missing required scope.");
+            return await CreateResponseAsync(req, HttpStatusCode.Forbidden, "Missing required scope or app role.");
         }
 
         _logger.LogInformation("Authenticated request for subject {Sub}.", principal.FindFirst("sub")?.Value ?? "unknown");
@@ -104,22 +106,36 @@ public class AuthenticatedFunction
         }
     }
 
-    private bool HasRequiredScope(System.Security.Claims.ClaimsPrincipal principal)
+    private bool HasRequiredPermission(System.Security.Claims.ClaimsPrincipal principal)
     {
         var scopeClaim = principal.FindFirst("scp")?.Value;
-        if (string.IsNullOrWhiteSpace(scopeClaim))
+
+        if (!string.IsNullOrWhiteSpace(scopeClaim))
         {
-            return false;
+            var requiredScopeName = _requiredScope.Contains('/')
+                ? _requiredScope[( _requiredScope.LastIndexOf('/') + 1)..]
+                : _requiredScope;
+
+            var scopes = scopeClaim.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (scopes.Any(s =>
+                string.Equals(s, _requiredScope, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(s, requiredScopeName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
         }
 
-        var requiredScopeName = _requiredScope.Contains('/')
-            ? _requiredScope[( _requiredScope.LastIndexOf('/') + 1)..]
-            : _requiredScope;
+        var requiredRoleName = _requiredAppRole.Contains('/')
+            ? _requiredAppRole[( _requiredAppRole.LastIndexOf('/') + 1)..]
+            : _requiredAppRole;
 
-        var scopes = scopeClaim.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        return scopes.Any(s =>
-            string.Equals(s, _requiredScope, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(s, requiredScopeName, StringComparison.OrdinalIgnoreCase));
+        var roles = principal.FindAll("roles")
+            .Select(c => c.Value)
+            .Where(v => !string.IsNullOrWhiteSpace(v));
+
+        return roles.Any(role =>
+            string.Equals(role, _requiredAppRole, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(role, requiredRoleName, StringComparison.OrdinalIgnoreCase));
     }
 
     private static async Task<HttpResponseData> CreateResponseAsync(HttpRequestData req, HttpStatusCode statusCode, string message)

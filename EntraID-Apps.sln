@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharePointCSOM_POC", "Share
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharePointCSOM_ListFiles_Console", "SharePointCSOM_ListFiles_Console\SharePointCSOM_ListFiles_Console.csproj", "{53810E15-C15F-4416-8625-BA173DC81C57}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntraID-FunctionApp-Client", "EntraID-FunctionApp-Client\EntraID-FunctionApp-Client.csproj", "{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -167,6 +169,18 @@ Global
 		{53810E15-C15F-4416-8625-BA173DC81C57}.Release|x64.Build.0 = Release|Any CPU
 		{53810E15-C15F-4416-8625-BA173DC81C57}.Release|x86.ActiveCfg = Release|Any CPU
 		{53810E15-C15F-4416-8625-BA173DC81C57}.Release|x86.Build.0 = Release|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Debug|x64.Build.0 = Debug|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Debug|x86.Build.0 = Debug|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Release|x64.ActiveCfg = Release|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Release|x64.Build.0 = Release|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Release|x86.ActiveCfg = Release|Any CPU
+		{3AD2CB9F-8D90-4275-91E3-A8A84E553BC6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -34,6 +34,9 @@
     },
     "entraRequiredScope": {
       "value": "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user"
+    },
+    "entraRequiredAppRole": {
+      "value": "access_as_application"
     }
   }
 }
