@@ -1,5 +1,6 @@
-using Azure.Core;
-using Azure.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using EntraID_FunctionApp_Client.Components;
 using EntraID_FunctionApp_Client.Services;
 
@@ -8,25 +9,49 @@ var builder = WebApplication.CreateBuilder(args);
 var functionApiBaseUrl = builder.Configuration["FunctionApi:BaseUrl"]
     ?? "https://func-entraid-dev-eus01-fmc0gpdbb9dwgvc9.eastus-01.azurewebsites.net";
 
-var useManagedIdentity = builder.Configuration.GetValue("AzureAd:UseManagedIdentity", true);
-var managedIdentityClientId = builder.Configuration["AzureAd:ManagedIdentityClientId"];
+var tenantId = builder.Configuration["AzureAd:TenantId"]
+    ?? throw new InvalidOperationException("Missing configuration: AzureAd:TenantId");
+var clientId = builder.Configuration["AzureAd:ClientId"]
+    ?? throw new InvalidOperationException("Missing configuration: AzureAd:ClientId");
+var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
+var callbackPath = builder.Configuration["AzureAd:CallbackPath"] ?? "/signin-oidc";
+var apiScope = builder.Configuration["FunctionApi:Scope"]
+    ?? "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user";
 
-TokenCredential credential;
-if (useManagedIdentity)
-{
-    credential = string.IsNullOrWhiteSpace(managedIdentityClientId)
-        ? new ManagedIdentityCredential()
-        : new ManagedIdentityCredential(managedIdentityClientId);
-}
-else
-{
-    credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+builder.Services.AddHttpContextAccessor();
+
+builder.Services
+    .AddAuthentication(options =>
     {
-        ManagedIdentityClientId = managedIdentityClientId
-    });
-}
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+    })
+    .AddCookie()
+    .AddOpenIdConnect(options =>
+    {
+        options.Authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
+        options.ClientId = clientId;
+        options.CallbackPath = callbackPath;
+        options.ResponseType = "code";
+        options.UsePkce = true;
+        options.SaveTokens = true;
+        options.GetClaimsFromUserInfoEndpoint = false;
 
-builder.Services.AddSingleton(credential);
+        if (!string.IsNullOrWhiteSpace(clientSecret))
+        {
+            options.ClientSecret = clientSecret;
+        }
+
+        options.Scope.Clear();
+        options.Scope.Add("openid");
+        options.Scope.Add("profile");
+        options.Scope.Add("offline_access");
+        options.Scope.Add(apiScope);
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
+
 builder.Services.AddHttpClient("FunctionApi", client =>
 {
     client.BaseAddress = new Uri(functionApiBaseUrl);
@@ -49,9 +74,39 @@ if (!app.Environment.IsDevelopment())
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapGet("/login", async (HttpContext context, string? returnUrl) =>
+{
+    var redirectUri = string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl;
+
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        context.Response.Redirect(redirectUri);
+        return;
+    }
+
+    await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties
+    {
+        RedirectUri = redirectUri
+    });
+});
+
+app.MapGet("/logout", async (HttpContext context, string? returnUrl) =>
+{
+    var redirectUri = string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl;
+
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties
+    {
+        RedirectUri = redirectUri
+    });
+});
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

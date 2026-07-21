@@ -1,25 +1,24 @@
 using System.Net;
 using System.Net.Http.Headers;
-using Azure.Core;
-using Azure.Identity;
+using Microsoft.AspNetCore.Authentication;
 
 namespace EntraID_FunctionApp_Client.Services;
 
 public sealed class FunctionApiService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly TokenCredential _credential;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IConfiguration _configuration;
     private readonly ILogger<FunctionApiService> _logger;
 
     public FunctionApiService(
         IHttpClientFactory httpClientFactory,
-        TokenCredential credential,
+        IHttpContextAccessor httpContextAccessor,
         IConfiguration configuration,
         ILogger<FunctionApiService> logger)
     {
         _httpClientFactory = httpClientFactory;
-        _credential = credential;
+        _httpContextAccessor = httpContextAccessor;
         _configuration = configuration;
         _logger = logger;
     }
@@ -31,10 +30,37 @@ public sealed class FunctionApiService
 
         try
         {
-            var token = await _credential.GetTokenAsync(new TokenRequestContext([scope]), cancellationToken);
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext is null)
+            {
+                return new FunctionPingResult(
+                    Success: false,
+                    StatusCode: null,
+                    ResponseBody: null,
+                    ErrorMessage: "No active HTTP context is available.",
+                    TokenExpiresOn: null);
+            }
+
+            var accessToken = await httpContext.GetTokenAsync("access_token");
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                return new FunctionPingResult(
+                    Success: false,
+                    StatusCode: HttpStatusCode.Unauthorized,
+                    ResponseBody: null,
+                    ErrorMessage: $"No delegated access token was found in the session for scope '{scope}'. Sign in again and consent to API permissions.",
+                    TokenExpiresOn: null);
+            }
+
+            var expiresAtRaw = await httpContext.GetTokenAsync("expires_at");
+            DateTimeOffset? expiresAt = null;
+            if (DateTimeOffset.TryParse(expiresAtRaw, out var parsedExpiresAt))
+            {
+                expiresAt = parsedExpiresAt;
+            }
 
             using var request = new HttpRequestMessage(HttpMethod.Get, pingPath);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             var client = _httpClientFactory.CreateClient("FunctionApi");
             using var response = await client.SendAsync(request, cancellationToken);
@@ -45,17 +71,7 @@ public sealed class FunctionApiService
                 StatusCode: response.StatusCode,
                 ResponseBody: body,
                 ErrorMessage: null,
-                TokenExpiresOn: token.ExpiresOn);
-        }
-        catch (AuthenticationFailedException ex)
-        {
-            _logger.LogError(ex, "Token acquisition failed for scope {Scope}", scope);
-            return new FunctionPingResult(
-                Success: false,
-                StatusCode: null,
-                ResponseBody: null,
-                ErrorMessage: ex.Message,
-                TokenExpiresOn: null);
+                TokenExpiresOn: expiresAt);
         }
         catch (Exception ex)
         {
