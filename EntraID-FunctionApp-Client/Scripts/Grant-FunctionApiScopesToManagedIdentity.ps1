@@ -8,9 +8,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$FunctionApiAppId,
 
-    [string]$DefaultScope = "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/.default",
+    [string]$DefaultScope = "api://84a651ee-de65-4753-ba10-f89389c9308d/.default",
 
-    [string]$DelegatedScope = "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user",
+    [string]$DelegatedScope = "api://84a651ee-de65-4753-ba10-f89389c9308d/access_as_user",
 
     [string]$ApplicationRoleValue = "access_as_application",
 

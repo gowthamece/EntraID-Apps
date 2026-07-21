@@ -31,16 +31,16 @@ param maximumInstanceCount int = 100
 param instanceMemoryMB int = 2048
 
 @description('Entra tenant ID used by the function token validator.')
-param entraTenantId string = '6e01b1f9-b1e5-4073-ac97-778069a0ad64'
+param entraTenantId string = 'b8f1747e-93a5-4b5b-8abc-91ce417dd3d6'
 
 @description('Entra app ID used by the function token validator.')
 param entraAppId string = '84a651ee-de65-4753-ba10-f89389c9308d'
 
 @description('Expected audience (resource app/client ID) for incoming access tokens.')
-param entraAudience string = '2766a7d4-1ac2-4d65-be3f-7e6478edd00a'
+param entraAudience string = '84a651ee-de65-4753-ba10-f89389c9308d'
 
 @description('Required scope claim for incoming access tokens.')
-param entraRequiredScope string = 'api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user'
+param entraRequiredScope string = 'api://84a651ee-de65-4753-ba10-f89389c9308d/access_as_user'
 
 @description('Required app role claim for app-only tokens (managed identity/client credentials).')
 param entraRequiredAppRole string = 'access_as_application'

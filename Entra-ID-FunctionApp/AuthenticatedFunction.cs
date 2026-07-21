@@ -24,10 +24,10 @@ public class AuthenticatedFunction
     {
         _logger = logger;
 
-        _tenantId = configuration["EntraId:TenantId"] ?? "6e01b1f9-b1e5-4073-ac97-778069a0ad64";
+        _tenantId = configuration["EntraId:TenantId"] ?? "b8f1747e-93a5-4b5b-8abc-91ce417dd3d6";
         _appId = configuration["EntraId:AppId"] ?? "84a651ee-de65-4753-ba10-f89389c9308d";
-        _audience = configuration["EntraId:Audience"] ?? "2766a7d4-1ac2-4d65-be3f-7e6478edd00a";
-        _requiredScope = configuration["EntraId:RequiredScope"] ?? "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user";
+        _audience = configuration["EntraId:Audience"] ?? "84a651ee-de65-4753-ba10-f89389c9308d";
+        _requiredScope = configuration["EntraId:RequiredScope"] ?? "api://84a651ee-de65-4753-ba10-f89389c9308d/access_as_user";
         _requiredAppRole = configuration["EntraId:RequiredAppRole"] ?? "access_as_application";
 
         var metadataAddress = $"https://login.microsoftonline.com/{_tenantId}/v2.0/.well-known/openid-configuration";

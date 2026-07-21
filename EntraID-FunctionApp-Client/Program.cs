@@ -16,7 +16,7 @@ var clientId = builder.Configuration["AzureAd:ClientId"]
 var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
 var callbackPath = builder.Configuration["AzureAd:CallbackPath"] ?? "/signin-oidc";
 var apiScope = builder.Configuration["FunctionApi:Scope"]
-    ?? "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user";
+    ?? "api://84a651ee-de65-4753-ba10-f89389c9308d/access_as_user";
 
 builder.Services.AddHttpContextAccessor();
 

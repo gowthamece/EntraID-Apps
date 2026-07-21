@@ -25,7 +25,7 @@ public sealed class FunctionApiService
 
     public async Task<FunctionPingResult> GetAuthenticatedPingAsync(CancellationToken cancellationToken = default)
     {
-        var scope = _configuration["FunctionApi:Scope"] ?? "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/.default";
+        var scope = _configuration["FunctionApi:Scope"] ?? "api://84a651ee-de65-4753-ba10-f89389c9308d/.default";
         var pingPath = _configuration["FunctionApi:PingPath"] ?? "/api/auth/ping";
 
         try

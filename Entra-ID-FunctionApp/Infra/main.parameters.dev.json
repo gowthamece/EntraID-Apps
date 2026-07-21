@@ -24,16 +24,16 @@
       "value": 2048
     },
     "entraTenantId": {
-      "value": "6e01b1f9-b1e5-4073-ac97-778069a0ad64"
+      "value": "b8f1747e-93a5-4b5b-8abc-91ce417dd3d6"
     },
     "entraAppId": {
       "value": "84a651ee-de65-4753-ba10-f89389c9308d"
     },
     "entraAudience": {
-      "value": "2766a7d4-1ac2-4d65-be3f-7e6478edd00a"
+      "value": "84a651ee-de65-4753-ba10-f89389c9308d"
     },
     "entraRequiredScope": {
-      "value": "api://2766a7d4-1ac2-4d65-be3f-7e6478edd00a/access_as_user"
+      "value": "api://84a651ee-de65-4753-ba10-f89389c9308d/access_as_user"
     },
     "entraRequiredAppRole": {
       "value": "access_as_application"
