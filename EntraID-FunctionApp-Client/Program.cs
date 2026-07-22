@@ -15,7 +15,6 @@ var tenantId = builder.Configuration["AzureAd:TenantId"]
     ?? throw new InvalidOperationException("Missing configuration: AzureAd:TenantId");
 var clientId = builder.Configuration["AzureAd:ClientId"]
     ?? throw new InvalidOperationException("Missing configuration: AzureAd:ClientId");
-var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
 var callbackPath = builder.Configuration["AzureAd:CallbackPath"] ?? "/signin-oidc";
 
 builder.Services.AddHttpContextAccessor();
@@ -37,11 +36,6 @@ builder.Services
         options.UsePkce = true;
         options.SaveTokens = true;
         options.GetClaimsFromUserInfoEndpoint = false;
-
-        if (!string.IsNullOrWhiteSpace(clientSecret))
-        {
-            options.ClientSecret = clientSecret;
-        }
 
         options.Scope.Clear();
         options.Scope.Add("openid");
