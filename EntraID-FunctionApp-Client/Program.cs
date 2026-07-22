@@ -1,3 +1,5 @@
+using Azure.Core;
+using Azure.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -15,10 +17,9 @@ var clientId = builder.Configuration["AzureAd:ClientId"]
     ?? throw new InvalidOperationException("Missing configuration: AzureAd:ClientId");
 var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
 var callbackPath = builder.Configuration["AzureAd:CallbackPath"] ?? "/signin-oidc";
-var apiScope = builder.Configuration["FunctionApi:Scope"]
-    ?? "api://84a651ee-de65-4753-ba10-f89389c9308d/access_as_user";
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<TokenCredential>(_ => new DefaultAzureCredential());
 
 builder.Services
     .AddAuthentication(options =>
@@ -46,7 +47,6 @@ builder.Services
         options.Scope.Add("openid");
         options.Scope.Add("profile");
         options.Scope.Add("offline_access");
-        options.Scope.Add(apiScope);
     });
 
 builder.Services.AddAuthorization();

@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
+using Azure.Core;
+using Azure.Identity;
 using Microsoft.AspNetCore.Authentication;
 
 namespace EntraID_FunctionApp_Client.Services;
@@ -8,17 +10,20 @@ public sealed class FunctionApiService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly TokenCredential _credential;
     private readonly IConfiguration _configuration;
     private readonly ILogger<FunctionApiService> _logger;
 
     public FunctionApiService(
         IHttpClientFactory httpClientFactory,
         IHttpContextAccessor httpContextAccessor,
+        TokenCredential credential,
         IConfiguration configuration,
         ILogger<FunctionApiService> logger)
     {
         _httpClientFactory = httpClientFactory;
         _httpContextAccessor = httpContextAccessor;
+        _credential = credential;
         _configuration = configuration;
         _logger = logger;
     }
@@ -41,26 +46,21 @@ public sealed class FunctionApiService
                     TokenExpiresOn: null);
             }
 
-            var accessToken = await httpContext.GetTokenAsync("access_token");
-            if (string.IsNullOrWhiteSpace(accessToken))
+            if (httpContext.User?.Identity?.IsAuthenticated != true)
             {
                 return new FunctionPingResult(
                     Success: false,
                     StatusCode: HttpStatusCode.Unauthorized,
                     ResponseBody: null,
-                    ErrorMessage: $"No delegated access token was found in the session for scope '{scope}'. Sign in again and consent to API permissions.",
+                    ErrorMessage: "User is not authenticated. Sign in before calling the Function API.",
                     TokenExpiresOn: null);
             }
 
-            var expiresAtRaw = await httpContext.GetTokenAsync("expires_at");
-            DateTimeOffset? expiresAt = null;
-            if (DateTimeOffset.TryParse(expiresAtRaw, out var parsedExpiresAt))
-            {
-                expiresAt = parsedExpiresAt;
-            }
+            var token = await _credential.GetTokenAsync(new TokenRequestContext([scope]), cancellationToken);
+            var expiresAt = token.ExpiresOn;
 
             using var request = new HttpRequestMessage(HttpMethod.Get, pingPath);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
 
             var client = _httpClientFactory.CreateClient("FunctionApi");
             using var response = await client.SendAsync(request, cancellationToken);

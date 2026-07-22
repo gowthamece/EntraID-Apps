@@ -1,9 +1,9 @@
 # EntraID-FunctionApp-Client
 
-Blazor Web App client that calls the protected Function endpoint:
+Blazor Web App client that signs users in with Entra ID and calls the protected Function endpoint using managed identity:
 
 - Endpoint: https://func-entraid-dev-eus01-fmc0gpdbb9dwgvc9.eastus-01.azurewebsites.net/api/auth/ping
-- Auth flow: Microsoft Entra token from managed identity (App Service) or developer identity (local)
+- Auth flow: Entra ID sign-in for the user, then `DefaultAzureCredential` for the Function API call
 
 ## Configuration
 
@@ -13,7 +13,7 @@ Blazor Web App client that calls the protected Function endpoint:
 - `AzureAd:ManagedIdentityClientId`: keep empty for system-assigned identity
 - `FunctionApi:BaseUrl`: Function host URL
 - `FunctionApi:PingPath`: Function route path
-- `FunctionApi:Scope`: use `api://<FunctionApiAppId>/.default` for app-only token requests
+- `FunctionApi:Scope`: use `api://<FunctionApiAppId>/.default` for managed identity / app-only token requests
 
 ## Run locally
 
@@ -22,7 +22,7 @@ cd EntraID-FunctionApp-Client
 dotnet run
 ```
 
-Open `/function-ping` and invoke the endpoint.
+Open `/function-ping` after signing in and invoke the endpoint.
 
 ## Deploy to App Service with system-assigned managed identity
 
@@ -40,4 +40,6 @@ Open `/function-ping` and invoke the endpoint.
 
 ## Important auth note
 
-Managed identity uses app-only tokens and typically carries `roles` claims, not delegated `scp` claims. The Function API should validate either the delegated scope or the required app role for this client scenario.
+The page is protected by Entra ID sign-in, but the outbound Function API call uses `DefaultAzureCredential`.
+In Azure App Service, that resolves to the app's managed identity.
+The Function API should accept an application permission/app role for this caller path.
