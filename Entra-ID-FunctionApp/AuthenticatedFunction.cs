@@ -52,6 +52,8 @@ public class AuthenticatedFunction
             return await CreateResponseAsync(req, HttpStatusCode.Unauthorized, "Token validation failed.");
         }
 
+        LogTokenClaims(principal);
+
         if (!HasRequiredPermission(principal))
         {
             return await CreateResponseAsync(req, HttpStatusCode.Forbidden, "Missing required scope or app role.");
@@ -118,5 +120,15 @@ public class AuthenticatedFunction
         var response = req.CreateResponse(statusCode);
         await response.WriteStringAsync(message);
         return response;
+    }
+
+    private void LogTokenClaims(System.Security.Claims.ClaimsPrincipal principal)
+    {
+        _logger.LogInformation("=== Token Claims ===");
+        foreach (var claim in principal.Claims)
+        {
+            _logger.LogInformation("Claim Type: {ClaimType}, Value: {ClaimValue}", claim.Type, claim.Value);
+        }
+        _logger.LogInformation("=== End Token Claims ===");
     }
 }
