@@ -32,8 +32,7 @@ builder.Services
         options.Authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
         options.ClientId = clientId;
         options.CallbackPath = callbackPath;
-        options.ResponseType = "code";
-        options.UsePkce = true;
+        options.ResponseType = "id_token";
         options.SaveTokens = false;
         options.GetClaimsFromUserInfoEndpoint = false;
 
