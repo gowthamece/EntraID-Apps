@@ -2,27 +2,27 @@ using System.Net;
 using System.Net.Http.Headers;
 using Azure.Core;
 using Azure.Identity;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace EntraID_FunctionApp_Client.Services;
 
 public sealed class FunctionApiService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly AuthenticationStateProvider _authStateProvider;
     private readonly TokenCredential _credential;
     private readonly IConfiguration _configuration;
     private readonly ILogger<FunctionApiService> _logger;
 
     public FunctionApiService(
         IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor,
+        AuthenticationStateProvider authStateProvider,
         TokenCredential credential,
         IConfiguration configuration,
         ILogger<FunctionApiService> logger)
     {
         _httpClientFactory = httpClientFactory;
-        _httpContextAccessor = httpContextAccessor;
+        _authStateProvider = authStateProvider;
         _credential = credential;
         _configuration = configuration;
         _logger = logger;
@@ -35,18 +35,8 @@ public sealed class FunctionApiService
 
         try
         {
-            var httpContext = _httpContextAccessor.HttpContext;
-            if (httpContext is null)
-            {
-                return new FunctionPingResult(
-                    Success: false,
-                    StatusCode: null,
-                    ResponseBody: null,
-                    ErrorMessage: "No active HTTP context is available.",
-                    TokenExpiresOn: null);
-            }
-
-            if (httpContext.User?.Identity?.IsAuthenticated != true)
+            var authState = await _authStateProvider.GetAuthenticationStateAsync();
+            if (authState.User?.Identity?.IsAuthenticated != true)
             {
                 return new FunctionPingResult(
                     Success: false,

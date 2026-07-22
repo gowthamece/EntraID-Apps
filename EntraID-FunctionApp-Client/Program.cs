@@ -17,7 +17,6 @@ var clientId = builder.Configuration["AzureAd:ClientId"]
     ?? throw new InvalidOperationException("Missing configuration: AzureAd:ClientId");
 var callbackPath = builder.Configuration["AzureAd:CallbackPath"] ?? "/signin-oidc";
 
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<TokenCredential>(_ => new DefaultAzureCredential());
 
 builder.Services
