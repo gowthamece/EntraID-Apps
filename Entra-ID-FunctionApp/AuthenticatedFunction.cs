@@ -109,6 +109,7 @@ public class AuthenticatedFunction
     private bool HasRequiredPermission(System.Security.Claims.ClaimsPrincipal principal)
     {
         var roles = principal.FindAll("roles")
+            .Concat(principal.FindAll("http://schemas.microsoft.com/ws/2008/06/identity/claims/role"))
             .Select(c => c.Value)
             .Where(v => !string.IsNullOrWhiteSpace(v));
 
