@@ -43,7 +43,7 @@ param entraAudience string = '84a651ee-de65-4753-ba10-f89389c9308d'
 param entraRequiredScope string = 'api://84a651ee-de65-4753-ba10-f89389c9308d/access_as_user'
 
 @description('Required app role claim for app-only tokens (managed identity/client credentials).')
-param entraRequiredAppRole string = 'access_as_application'
+param entraRequiredAppRole string = 'user.access'
 
 var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
 

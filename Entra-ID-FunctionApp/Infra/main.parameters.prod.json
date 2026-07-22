@@ -36,7 +36,7 @@
       "value": "api://84a651ee-de65-4753-ba10-f89389c9308d/access_as_user"
     },
     "entraRequiredAppRole": {
-      "value": "access_as_application"
+      "value": "user.access"
     }
   }
 }
