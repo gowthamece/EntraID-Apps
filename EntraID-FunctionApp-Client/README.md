@@ -9,11 +9,8 @@ Blazor Web App client that signs users in with Entra ID and calls the protected 
 
 `appsettings.json`
 
-- `AzureAd:UseManagedIdentity`: `true` for App Service system-assigned managed identity
-- `AzureAd:ManagedIdentityClientId`: keep empty for system-assigned identity
 - `FunctionApi:BaseUrl`: Function host URL
 - `FunctionApi:PingPath`: Function route path
-- `FunctionApi:Scope`: use `api://<FunctionApiAppId>/.default` for managed identity / app-only token requests
 
 ## Run locally
 

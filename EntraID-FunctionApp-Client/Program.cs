@@ -34,13 +34,12 @@ builder.Services
         options.CallbackPath = callbackPath;
         options.ResponseType = "code";
         options.UsePkce = true;
-        options.SaveTokens = true;
+        options.SaveTokens = false;
         options.GetClaimsFromUserInfoEndpoint = false;
 
         options.Scope.Clear();
         options.Scope.Add("openid");
         options.Scope.Add("profile");
-        options.Scope.Add("offline_access");
     });
 
 builder.Services.AddAuthorization();

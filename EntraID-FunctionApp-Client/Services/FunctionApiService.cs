@@ -30,8 +30,8 @@ public sealed class FunctionApiService
 
     public async Task<FunctionPingResult> GetAuthenticatedPingAsync(CancellationToken cancellationToken = default)
     {
-        var scope = _configuration["FunctionApi:Scope"] ?? "api://84a651ee-de65-4753-ba10-f89389c9308d/.default";
         var pingPath = _configuration["FunctionApi:PingPath"] ?? "/api/auth/ping";
+        var functionApiResource = "api://84a651ee-de65-4753-ba10-f89389c9308d";
 
         try
         {
@@ -56,7 +56,7 @@ public sealed class FunctionApiService
                     TokenExpiresOn: null);
             }
 
-            var token = await _credential.GetTokenAsync(new TokenRequestContext([scope]), cancellationToken);
+            var token = await _credential.GetTokenAsync(new TokenRequestContext([$"{functionApiResource}/.default"]), cancellationToken);
             var expiresAt = token.ExpiresOn;
 
             using var request = new HttpRequestMessage(HttpMethod.Get, pingPath);
